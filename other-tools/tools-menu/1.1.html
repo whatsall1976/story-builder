@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>视频换脸工具说明</title>
+</head>
+<body>
+    <p>视频换脸工具从之前的DFL, Face Magic到后来的roop, facefusion以及visoMagic。</p>
+
+    <p>目前最得心应手的方式是：用 <a href="https://www.autodl.com">autodl.com</a> 上的 facefusion 工具进行批量视频换脸。</p>
+
+    <p>关键命令是：</p>
+
+    <pre><code class="language-bash">
+for i in {1..10} 
+do
+    python facefusion.py headless-run -t /root/autodl-tmp/dst/${i}.mp4 -o /root/autodl-tmp/${i}o.mp4
+done
+    </code></pre>
+
+    <p>因为换脸太重要了，我也部署到了家里的 Mac 两部电脑和 Windows（5070）上面。</p>
+</body>
+</html>

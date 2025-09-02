@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>花裙子工作流</title>
+</head>
+<body>
+    <p>2025-05-31</pp>
+    <h3>第一步 准备</h3>
+    <p>从AISwapFace/photos里面找一件看上去不错的衣服，比如花裙子。操作方式是</p>
+    <p>在terminal上敲下面的命令：</p>
+    <pre><code class="language-bash" style="color: #888">/Volumes/sandisk/4hobby/ent/CIAG/AISwapFace/photos/运行脚本.sh</code></pre>
+    <p>标准是：手脚对衣服没有遮挡，衣服的完整形态正常反应，不要太过于暴露，否则会有问题。将它进行简单处理成1024x1024以内的大小。
+    <h3>第二步 一致性生图</h3>
+    <p>在<a href="https://hunyuan.tencent.com/modelSquare/home/play?modelId=129">混元</a>的一致性生图那里进行多图生成。</p>
+    <p>注意提示词，示例：</p>
+    <p style="color: #888">美丽的女孩，圆脸，短发，没有刘海，穿着花裙子，坐在长椅上双手扶着大腿，一条腿翘在另一条腿的上面，可以看到红色高跟鞋，周围是一片寂静的早晨公园草坪上。脸正对着镜头，眼神有点幽远，嘴唇略微张开。椅子旁边坐着一个猥琐的中年男人，他盯着女孩子看。</p>
+    <h3>第三步 换脸</h3>
+    <p>这个工作流的特点，就是品质可能比较差，后面需要用topaz photo AI进行处理。</p>
+    <p>所以我们用windows里面的facefusion进行批量图片处理。批处理的文档可以在tools文件夹里找到。ps1和sh格式都有。前面提到，后面反正都要用topaz提升品质，不如干脆在facefusion跳过face enhancer的步骤，所以别忘了对脚本进行修整。</p>
+    <p>如果混元生成的女孩脸部太长太瘦，可以拿到手机美图里面调整，最好用的是增加face width和减少chin length。 
+    <h3>第四步 脸部修复</h3>
+    <p>在topaz photo AI进行处理。重点是face restore和sharpen，sharpen工具要在editing control那里把脸部去掉，否则双重处理会导致过度sharpen。</p>
+</body>
+</html>

@@ -1,0 +1,146 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #ffdde1 0%, #ee9ca7 100%); /* Dreamy pink gradient */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden; /* Prevent scrollbars from floating page */
+}
+
+.widget-container {
+    position: fixed; /* Use fixed position */
+    top: 20px; /* 20px from the top */
+    left: 20px; /* 20px from the left */
+    display: inline-block;
+}
+
+.widget-button, .sub-menu-button, .sub-sub-menu-button {
+    padding: 12px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 30px; /* Bubbling effect */
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease; /* Smooth transitions */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+}
+
+.widget-button {
+    background-color: #ff8fab; /* Girly pink */
+    color: white;
+}
+
+.widget-button:hover {
+    background-color: #ffb6c1; /* Lighter pink on hover */
+    transform: scale(1.05); /* Subtle bubble effect on hover */
+}
+
+.vertical-menu {
+    position: absolute;
+    top: 100%; /* Position below the main button */
+    left: 0;
+    background-color: rgba(255, 182, 193, 0.9); /* Semi-transparent light pink */
+    border-radius: 15px; /* Rounded corners */
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    opacity: 0; /* Initially hidden */
+    visibility: hidden;
+    transform: translateY(-10px); /* Start slightly above final position */
+    transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease;
+    min-width: 180px; /* Ensure buttons fit */
+}
+
+.vertical-menu.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0); /* Slide down to final position */
+}
+
+.menu-item {
+    position: relative;
+}
+
+.sub-menu-button {
+    background-color: #ffb6c1; /* Light pink */
+    color: #4b0082; /* Deep purple for contrast */
+    display: block; /* Stack vertically */
+    width: calc(100% - 10px); /* Adjust for padding */
+    text-align: left;
+}
+
+.sub-menu-button:hover {
+    background-color: #ffc0cb; /* Even lighter pink */
+    transform: scale(1.03); /* Subtle bubble */
+}
+
+.horizontal-menu {
+    position: absolute;
+    top: 0; /* Align with the parent sub-menu button */
+    left: 100%; /* Position to the right of the parent */
+    background-color: rgba(255, 192, 203, 0.95); /* Slightly more opaque pink */
+    border-radius: 15px; /* Rounded corners */
+    padding: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 11; /* Above the vertical menu */
+    opacity: 0; /* Initially hidden */
+    visibility: hidden;
+    transform: translateX(-10px); /* Start slightly to the left */
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+    white-space: nowrap; /* Keep buttons in a single row */
+}
+
+.menu-item:hover .horizontal-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0); /* Slide to the right */
+}
+
+.sub-sub-menu-button {
+     background-color: #ffc0cb; /* Even lighter pink */
+    color: #4b0082; /* Deep purple */
+    margin: 3px;
+    padding: 8px 15px;
+    font-size: 14px;
+}
+
+.sub-sub-menu-button:hover {
+     background-color: #ffdde1; /* Lightest pink */
+    transform: scale(1.05); /* Subtle bubble */
+}
+
+.floating-page {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 228, 225, 0.98); /* Misty rose, nearly opaque */
+    border-radius: 20px; /* More rounded */
+    padding: 30px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    z-index: 100; /* On top of everything */
+    width: 80%;
+    max-width: 600px;
+    max-height: 80%;
+    overflow: auto;
+    opacity: 0; /* Initially hidden */
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.floating-page.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.floating-page h2 {
+    color: #4b0082;
+    margin-top: 0;
+}
+
+.floating-page p {
+    color: #333;
+} 
