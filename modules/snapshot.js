@@ -54,7 +54,7 @@ class SnapshotGenerator {
     }
   }
 
-  // Collect all media files from story folder recursively
+  // Collect all media files from story folder using pages.json
   async collectMediaFiles(storyFolder) {
     const mediaFiles = {
       images: [],
@@ -62,32 +62,92 @@ class SnapshotGenerator {
     };
 
     try {
-      // Get all files in the story folder recursively
-      const response = await fetch(`/api/story-media/${storyFolder}`);
+      // Try to load pages.json
+      const response = await fetch(`/stories/${storyFolder}/json/pages.json`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch media for ${storyFolder}`);
+        throw new Error(`Failed to fetch pages.json for ${storyFolder}`);
       }
       
-      const files = await response.json();
+      const jsonContent = await response.text();
+      console.log(`Loaded pages.json for ${storyFolder}`);
       
-      files.forEach(file => {
-        const extension = this.getFileExtension(file).toLowerCase();
-        const fullPath = `/stories/${storyFolder}/${file}`;
-        
+      // Extract media URLs from JSON content using regex
+      const mediaUrls = this.extractMediaFromJson(jsonContent, storyFolder);
+      
+      mediaUrls.forEach(url => {
+        const extension = this.getFileExtension(url).toLowerCase();
         if (this.supportedImageFormats.includes(extension)) {
-          mediaFiles.images.push(fullPath);
+          mediaFiles.images.push(url);
         } else if (this.supportedVideoFormats.includes(extension)) {
-          mediaFiles.videos.push(fullPath);
+          mediaFiles.videos.push(url);
         }
       });
 
+      console.log(`Found ${mediaFiles.images.length} images and ${mediaFiles.videos.length} videos in ${storyFolder}`);
+
     } catch (error) {
-      // Fallback: try common paths
-      console.warn(`API call failed for ${storyFolder}, using fallback detection`);
+      console.warn(`Failed to load pages.json for ${storyFolder}, using fallback detection:`, error);
       await this.fallbackMediaDetection(storyFolder, mediaFiles);
     }
 
     return mediaFiles;
+  }
+
+  // Extract media URLs from JSON content
+  extractMediaFromJson(jsonContent, storyFolder) {
+    const mediaUrls = [];
+    const mediaExtensions = [...this.supportedImageFormats, ...this.supportedVideoFormats];
+    
+    // Create regex pattern to find quoted strings ending with media extensions
+    const extensionPattern = mediaExtensions.map(ext => ext.slice(1)).join('|'); // Remove dots
+    const regex = new RegExp(`"([^"]*\\.(${extensionPattern}))"|'([^']*\\.(${extensionPattern}))'`, 'gi');
+    
+    let match;
+    while ((match = regex.exec(jsonContent)) !== null) {
+      const url = match[1] || match[3]; // Get the captured URL
+      console.log(`Found media reference: ${url}`);
+      
+      // Convert relative paths to absolute localhost URLs
+      const absoluteUrl = this.convertToAbsoluteUrl(url, storyFolder);
+      if (absoluteUrl && !mediaUrls.includes(absoluteUrl)) {
+        mediaUrls.push(absoluteUrl);
+        console.log(`Added media URL: ${absoluteUrl}`);
+      }
+    }
+    
+    return mediaUrls;
+  }
+
+  // Convert relative media paths to absolute localhost URLs
+  convertToAbsoluteUrl(url, storyFolder) {
+    // If already absolute URL (starts with http), return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // If starts with 'media/', convert to localhost URL
+    if (url.startsWith('media/')) {
+      return `http://localhost:1976/stories/${storyFolder}/${url}`;
+    }
+    
+    // If it's just a filename, assume it's in media folder
+    if (!url.includes('/') && this.hasMediaExtension(url)) {
+      return `http://localhost:1976/stories/${storyFolder}/media/${url}`;
+    }
+    
+    // For other relative paths, prepend story path
+    if (!url.startsWith('/')) {
+      return `http://localhost:1976/stories/${storyFolder}/${url}`;
+    }
+    
+    // If starts with /, it's already relative to root
+    return `http://localhost:1976${url}`;
+  }
+
+  // Check if URL has supported media extension
+  hasMediaExtension(url) {
+    const extension = this.getFileExtension(url).toLowerCase();
+    return [...this.supportedImageFormats, ...this.supportedVideoFormats].includes(extension);
   }
 
   // Fallback method to detect media files
@@ -323,17 +383,44 @@ class SnapshotGenerator {
   getFallbackSnapshot(storyFolder) {
     return {
       type: 'image',
-      src: `/stories/${storyFolder}/media/1.jpg`,
+      src: `http://localhost:1976/stories/${storyFolder}/media/1.jpg`,
       storyFolder: storyFolder
     };
   }
 
   // Test if a video file exists and create snapshot
   async testVideoSnapshot(storyFolder) {
+    // First try to get from pages.json
+    try {
+      const response = await fetch(`/stories/${storyFolder}/json/pages.json`);
+      if (response.ok) {
+        const jsonContent = await response.text();
+        const mediaUrls = this.extractMediaFromJson(jsonContent, storyFolder);
+        
+        // Find first video URL
+        for (const url of mediaUrls) {
+          const extension = this.getFileExtension(url).toLowerCase();
+          if (this.supportedVideoFormats.includes(extension)) {
+            console.log(`Found video from pages.json: ${url}`);
+            return {
+              type: 'video',
+              src: url,
+              storyFolder: storyFolder
+            };
+          }
+        }
+      }
+    } catch (e) {
+      console.warn(`Could not load pages.json for ${storyFolder}`);
+    }
+
+    // Fallback to common video paths
     const commonVideoPaths = [
+      `http://localhost:1976/stories/${storyFolder}/media/1.mp4`,
+      `http://localhost:1976/stories/${storyFolder}/media/video.mp4`,
+      `http://localhost:1976/stories/${storyFolder}/media/movie.mp4`,
       `/stories/${storyFolder}/media/1.mp4`,
       `/stories/${storyFolder}/media/video.mp4`,
-      `/stories/${storyFolder}/media/movie.mp4`,
       `/stories/${storyFolder}/1.mp4`,
       `/stories/${storyFolder}/video.mp4`
     ];
