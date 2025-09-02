@@ -15,20 +15,20 @@ document.addEventListener('DOMContentLoaded', function() {
   const focusNextBtn = document.getElementById('focus-next-btn');
   
   if (focusPrevBtn) {
-    focusPrevBtn.addEventListener('click', () => {
+    focusPrevBtn.addEventListener('click', async () => {
       if (allStories.length > 0) {
         selectedStoryIndex = (selectedStoryIndex - 1 + allStories.length) % allStories.length;
-        updateFocusView(allStories[selectedStoryIndex]);
+        await updateFocusView(allStories[selectedStoryIndex]);
         updateFocusIndicators();
       }
     });
   }
   
   if (focusNextBtn) {
-    focusNextBtn.addEventListener('click', () => {
+    focusNextBtn.addEventListener('click', async () => {
       if (allStories.length > 0) {
         selectedStoryIndex = (selectedStoryIndex + 1) % allStories.length;
-        updateFocusView(allStories[selectedStoryIndex]);
+        await updateFocusView(allStories[selectedStoryIndex]);
         updateFocusIndicators();
       }
     });
@@ -114,13 +114,15 @@ function switchView(viewMode) {
       }
     }
   }
+
+  console.log(`Switching to view mode: ${viewMode}`);
 }
 
 function loadGalleryView() {
   const thumbnailsContainer = document.getElementById('thumbnails');
   thumbnailsContainer.innerHTML = '';
 
-  allStories.forEach((story, index) => {
+  allStories.forEach(async (story, index) => {
     const thumbnailCard = document.createElement('div');
     thumbnailCard.classList.add('thumbnail-card');
     if (index === selectedStoryIndex) {
@@ -130,7 +132,7 @@ function loadGalleryView() {
     const img = document.createElement('img');
     // Use snapshot generator for dynamic preview
     if (window.snapshotGenerator) {
-      snapshotGenerator.applySnapshot(img, story.folder);
+      await snapshotGenerator.applySnapshot(img, story.folder);
     } else {
       // Fallback to original behavior
       img.src = `/stories/${story.folder}/media/1.jpg`;
@@ -147,14 +149,14 @@ function loadGalleryView() {
     thumbnailCard.appendChild(img);
     thumbnailCard.appendChild(title);
     
-    thumbnailCard.addEventListener('click', () => selectStory(index));
+  thumbnailCard.addEventListener('click', async () => await selectStory(index));
     thumbnailsContainer.appendChild(thumbnailCard);
   });
 
   selectStory(selectedStoryIndex);
 }
 
-function selectStory(index) {
+async function selectStory(index) {
   selectedStoryIndex = index;
   const story = allStories[index];
 
@@ -169,7 +171,7 @@ function selectStory(index) {
 
   // Use snapshot generator for featured image
   if (window.snapshotGenerator) {
-    snapshotGenerator.applySnapshot(featuredImg, story.folder);
+    await snapshotGenerator.applySnapshot(featuredImg, story.folder);
   } else {
     // Fallback to original behavior
     featuredImg.src = `/stories/${story.folder}/media/1.jpg`;
@@ -182,17 +184,23 @@ function selectStory(index) {
   featuredTitle.textContent = story.title;
 
   // Update focus view if active
-  updateFocusView(story);
+  await updateFocusView(story);
 }
 
-function updateFocusView(story) {
+async function updateFocusView(story) {
   const focusImg = document.getElementById('focus-thumbnail');
+  if (!focusImg) {
+    console.error('Focus-thumbnail element is missing or not accessible in the DOM.');
+    return;
+  }
+  
   const focusTitle = document.getElementById('focus-story-title');
   
   if (focusImg && focusTitle) {
     // Use snapshot generator for focus view
     if (window.snapshotGenerator) {
-      snapshotGenerator.applySnapshot(focusImg, story.folder);
+      console.log(`Focus-thumbnail ID before applying snapshot: ${focusImg.id}`);
+      await snapshotGenerator.applySnapshot(focusImg, story.folder);
     } else {
       // Fallback to original behavior
       focusImg.src = `/stories/${story.folder}/media/1.jpg`;
@@ -204,12 +212,18 @@ function updateFocusView(story) {
     
     focusTitle.textContent = story.title;
   }
+
+  console.log(`updateFocusView called for story: ${story.folder}`);
+  console.log(`focus-thumbnail element:`, focusImg);
+  console.log('Focus-thumbnail element details:', focusImg);
+
+  console.log(`Updating focus view for story: ${story.folder}, focus-thumbnail ID: ${focusImg.id}`);
 }
 
-function loadFocusView() {
+async function loadFocusView() {
   if (allStories.length > 0) {
     const story = allStories[selectedStoryIndex] || allStories[0];
-    updateFocusView(story);
+    await updateFocusView(story);
     loadFocusIndicators();
   }
 }
@@ -227,9 +241,9 @@ function loadFocusIndicators() {
       indicator.classList.add('active');
     }
     
-    indicator.addEventListener('click', () => {
+    indicator.addEventListener('click', async () => {
       selectedStoryIndex = index;
-      updateFocusView(allStories[index]);
+      await updateFocusView(allStories[index]);
       updateFocusIndicators();
     });
     
@@ -260,3 +274,6 @@ function editFeaturedStory() {
     window.open(`/stories/${allStories[selectedStoryIndex].folder}/builder.html`, '_blank');
   }
 }
+
+// Top-level debug log
+console.log('Top-level check: focus-thumbnail element:', document.getElementById('focus-thumbnail'));

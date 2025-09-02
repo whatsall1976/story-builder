@@ -127,37 +127,43 @@ function initializeFocusView() {
   const nextBtn = document.getElementById('focus-next-btn');
 
   if (prevBtn) {
-    prevBtn.addEventListener('click', () => navigateFocus(-1));
+    prevBtn.addEventListener('click', async () => await navigateFocus(-1));
   }
 
   if (nextBtn) {
-    nextBtn.addEventListener('click', () => navigateFocus(1));
+    nextBtn.addEventListener('click', async () => await navigateFocus(1));
   }
 }
 
-function loadFocusView() {
+async function loadFocusView() {
   if (!allStories || allStories.length === 0) return;
 
   // Ensure focusIndex is within bounds
   if (focusIndex >= allStories.length) focusIndex = 0;
   if (focusIndex < 0) focusIndex = allStories.length - 1;
 
-  updateFocusDisplay();
+  await updateFocusDisplay();
   generateFocusIndicators();
 }
 
-function updateFocusDisplay() {
+async function updateFocusDisplay() {
   const story = allStories[focusIndex];
   if (!story) return;
 
   // Update thumbnail
   const thumbnail = document.getElementById('focus-thumbnail');
   if (thumbnail) {
-    thumbnail.src = `/stories/${story.folder}/media/1.jpg`;
-    thumbnail.onerror = function() {
-      this.onerror = null;
-      this.src = `/stories/${story.folder}/media/1.png`;
-    };
+    // Use snapshot generator for random image
+    if (window.snapshotGenerator) {
+      await snapshotGenerator.applySnapshot(thumbnail, story.folder);
+    } else {
+      // Fallback to original behavior
+      thumbnail.src = `/stories/${story.folder}/media/1.jpg`;
+      thumbnail.onerror = function() {
+        this.onerror = null;
+        this.src = `/stories/${story.folder}/media/1.png`;
+      };
+    }
   }
 
   // Update story title
@@ -204,9 +210,9 @@ function generateFocusIndicators() {
       indicator.classList.add('active');
     }
     
-    indicator.addEventListener('click', () => {
+    indicator.addEventListener('click', async () => {
       focusIndex = index;
-      updateFocusDisplay();
+      await updateFocusDisplay();
     });
 
     container.appendChild(indicator);
@@ -220,7 +226,7 @@ function updateFocusIndicators() {
   });
 }
 
-function navigateFocus(direction) {
+async function navigateFocus(direction) {
   if (!allStories || allStories.length === 0) return;
 
   focusIndex += direction;
@@ -231,7 +237,7 @@ function navigateFocus(direction) {
     focusIndex = allStories.length - 1;
   }
 
-  updateFocusDisplay();
+  await updateFocusDisplay();
 }
 
 function setupKeyboardNavigation() {

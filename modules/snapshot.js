@@ -121,6 +121,7 @@ class SnapshotGenerator {
 
   // Apply snapshot to an element
   async applySnapshot(element, storyFolder) {
+    console.log(`Applying snapshot to element with ID: ${element.id}, story folder: ${storyFolder}`);
     const snapshot = await this.getSnapshot(storyFolder);
     this.applyImageSnapshot(element, snapshot);
   }
@@ -128,7 +129,9 @@ class SnapshotGenerator {
   // Apply image snapshot to element
   applyImageSnapshot(element, snapshot) {
     if (element.tagName === 'IMG') {
-      element.src = snapshot.src;
+      // Add cache-busting query param to force reload
+      const cacheBustedSrc = snapshot.src + (snapshot.src.includes('?') ? '&' : '?') + 'cb=' + Date.now();
+      element.src = cacheBustedSrc;
       element.onerror = () => {
         console.warn(`Failed to load ${snapshot.src}, using fallback`);
         element.src = this.getFallbackSnapshot(snapshot.storyFolder).src;
@@ -136,7 +139,8 @@ class SnapshotGenerator {
     } else {
       // Create img element if element is not img
       const img = document.createElement('img');
-      img.src = snapshot.src;
+      const cacheBustedSrc = snapshot.src + (snapshot.src.includes('?') ? '&' : '?') + 'cb=' + Date.now();
+      img.src = cacheBustedSrc;
       img.style.width = '100%';
       img.style.height = '100%';
       img.style.objectFit = 'cover';
