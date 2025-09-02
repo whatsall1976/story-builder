@@ -1,0 +1,329 @@
+/* Settings Modal */
+.settings-modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(45, 27, 46, 0.8);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease;
+}
+
+.settings-modal-content {
+  background-color: var(--surface);
+  margin: 5% auto;
+  padding: 2rem;
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 600px;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s ease;
+}
+
+.settings-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.settings-section {
+  margin-bottom: 2rem;
+}
+
+.settings-section h3 {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.setting-item {
+  margin-bottom: 1rem;
+}
+
+.setting-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.radio-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease;
+}
+
+.radio-option:hover {
+  background-color: var(--surface-2);
+}
+
+.radio-option input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+}
+
+.radio-option label {
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.settings-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Enhanced Focus View Styles */
+.focus-view {
+  display: none;
+  flex-direction: column;
+  padding: 4rem 2rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.focus-view.active {
+  display: flex;
+}
+
+.focus-controls {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.focus-controls:hover {
+  opacity: 1;
+}
+
+.focus-story-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.focus-story-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.focus-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.focus-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.625rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: auto;
+  font-weight: 500;
+}
+
+.focus-btn-preview {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.focus-btn-preview:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.focus-btn-play {
+  background: var(--success);
+  color: white;
+}
+
+.focus-btn-play:hover {
+  background: var(--success-dark);
+}
+
+.focus-btn-edit {
+  background: var(--primary);
+  color: white;
+}
+
+.focus-btn-edit:hover {
+  background: var(--primary-dark);
+}
+
+.focus-main-content {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.focus-thumbnail-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 2px solid var(--primary);
+}
+
+.focus-thumbnail {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.focus-thumbnail:hover {
+  transform: scale(1.02);
+}
+
+.focus-nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 20, 147, 0.8);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0;
+  backdrop-filter: blur(8px);
+  font-size: 1.25rem;
+}
+
+.focus-main-content:hover .focus-nav-button {
+  opacity: 1;
+}
+
+.focus-nav-button:hover {
+  background: rgba(255, 20, 147, 1);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.focus-nav-prev {
+  left: -1.5rem;
+}
+
+.focus-nav-next {
+  right: -1.5rem;
+}
+
+.focus-indicators {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.focus-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.focus-indicator.active {
+  background: var(--primary);
+  transform: scale(1.5);
+}
+
+.focus-indicator:hover {
+  background: var(--primary);
+  transform: scale(1.2);
+}
+
+/* Keyboard navigation hint */
+.focus-hint {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .focus-view {
+    padding: 1rem;
+    min-height: 70vh;
+  }
+  
+  .focus-controls {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .focus-thumbnail {
+    height: 300px;
+  }
+  
+  .focus-nav-button {
+    opacity: 1;
+  }
+  
+  .focus-nav-prev {
+    left: 0.5rem;
+  }
+  
+  .focus-nav-next {
+    right: 0.5rem;
+  }
+}

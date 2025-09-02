@@ -26,29 +26,9 @@ function initializeMainMenu() {
   });
 
   // Menu item handlers
-  const viewSwitchGrid = document.getElementById('view-switch-grid');
-  const viewSwitchGallery = document.getElementById('view-switch-gallery');
   const helpBtn = document.getElementById('help-btn');
   const toolboxBtn = document.getElementById('toolbox-btn');
-
-  // View switching handlers
-  if (viewSwitchGrid) {
-    viewSwitchGrid.addEventListener('click', () => {
-      if (typeof switchView === 'function') {
-        switchView('grid');
-      }
-      closeMainMenu();
-    });
-  }
-
-  if (viewSwitchGallery) {
-    viewSwitchGallery.addEventListener('click', () => {
-      if (typeof switchView === 'function') {
-        switchView('gallery');
-      }
-      closeMainMenu();
-    });
-  }
+  const settingsBtn = document.getElementById('settings-btn');
 
   // Help modal handler
   if (helpBtn) {
@@ -64,6 +44,17 @@ function initializeMainMenu() {
     toolboxBtn.addEventListener('click', (e) => {
       e.preventDefault();
       window.open('/other-tools/tools-menu/index.html', '_blank');
+      closeMainMenu();
+    });
+  }
+
+  // Settings modal handler
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (typeof settingsModule !== 'undefined' && settingsModule.openSettingsModal) {
+        settingsModule.openSettingsModal();
+      }
       closeMainMenu();
     });
   }

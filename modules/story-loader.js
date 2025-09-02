@@ -152,4 +152,9 @@ function loadCards(folders) {
 
     grid.appendChild(card);
   });
+
+  // After loading all cards, apply the user's preferred view mode
+  if (typeof settingsModule !== 'undefined' && settingsModule.applyViewMode) {
+    setTimeout(() => settingsModule.applyViewMode(), 100);
+  }
 }

@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/modules/view-switcher.css">
   <link rel="stylesheet" href="/modules/favorites.css">
   <link rel="stylesheet" href="/modules/main-menu.css">
+  <link rel="stylesheet" href="/modules/settings.css">
 </head>
 <body>
 
@@ -21,25 +22,6 @@
     </button>
     
     <div id="main-dropdown-content" class="main-dropdown-content">
-      <button id="view-switch-grid" class="main-dropdown-item">
-        <div class="main-dropdown-item-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z"/>
-          </svg>
-        </div>
-        视图切换 - 网格视图
-      </button>
-      <button id="view-switch-gallery" class="main-dropdown-item">
-        <div class="main-dropdown-item-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"/>
-          </svg>
-        </div>
-        视图切换 - 画廊视图
-      </button>
-      
-      <div class="main-dropdown-separator"></div>
-      
       <button id="add-favorite-btn" class="main-dropdown-item">
         <div class="main-dropdown-item-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -69,7 +51,7 @@
       
       <div class="main-dropdown-separator"></div>
       
-      <button class="main-dropdown-item disabled">
+      <button id="settings-btn" class="main-dropdown-item">
         <div class="main-dropdown-item-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 15a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h2a3 3 0 0 0 3-3v-2zm7-9a3 3 0 0 0-3-3h-2a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h2a3 3 0 0 0 3-3V6z"/>
@@ -97,6 +79,44 @@
       </div>
     </div>
     <div id="thumbnails" class="story-thumbnails"></div>
+  </div>
+
+  <!-- Focus View -->
+  <div id="focus" class="focus-view">
+    <div class="focus-controls">
+      <div class="focus-story-info">
+        <h3 id="focus-story-title" class="focus-story-title">Story Title</h3>
+      </div>
+      <div class="focus-actions">
+        <button id="focus-preview-btn" class="focus-btn focus-btn-preview">Preview</button>
+        <button id="focus-play-btn" class="focus-btn focus-btn-play">Play</button>
+        <button id="focus-edit-btn" class="focus-btn focus-btn-edit">Edit</button>
+      </div>
+    </div>
+    
+    <div class="focus-main-content">
+      <button id="focus-prev-btn" class="focus-nav-button focus-nav-prev">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      
+      <div class="focus-thumbnail-container">
+        <img id="focus-thumbnail" class="focus-thumbnail" src="" alt="Story Thumbnail">
+      </div>
+      
+      <button id="focus-next-btn" class="focus-nav-button focus-nav-next">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div id="focus-indicators" class="focus-indicators"></div>
+    
+    <div class="focus-hint">
+      Use ← → arrow keys to navigate
+    </div>
   </div>
 
   <div id="previewModal" class="modal">
@@ -214,9 +234,46 @@
     </div>
   </div>
 
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="settings-modal">
+    <div class="settings-modal-content">
+      <div class="settings-modal-header">
+        <h2>设置</h2>
+        <span class="close">&times;</span>
+      </div>
+      
+      <div class="settings-section">
+        <h3>视图模式</h3>
+        <div class="setting-item">
+          <label class="setting-label">选择默认视图模式:</label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="view-mode-focus" name="view-mode" value="focus" checked>
+              <label for="view-mode-focus">焦点视图</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="view-mode-grid" name="view-mode" value="grid">
+              <label for="view-mode-grid">网格视图</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="view-mode-gallery" name="view-mode" value="gallery">
+              <label for="view-mode-gallery">画廊视图</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-actions">
+        <button id="settings-cancel-btn" class="btn btn-secondary">取消</button>
+        <button id="settings-save-btn" class="btn btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/modules/view-switcher.js"></script>
   <script src="/modules/story-loader.js"></script>
   <script src="/modules/favorites.js"></script>
+  <script src="/modules/settings.js"></script>
   <script src="/modules/main-menu.js"></script>
 
 </body>
