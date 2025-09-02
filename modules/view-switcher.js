@@ -60,11 +60,17 @@ function loadGalleryView() {
     }
 
     const img = document.createElement('img');
-    img.src = `/stories/${story.folder}/media/1.jpg`;
-    img.onerror = function() {
-      this.onerror = null;
-      this.src = `/stories/${story.folder}/media/1.png`;
-    };
+    // Use snapshot generator for dynamic preview
+    if (window.snapshotGenerator) {
+      snapshotGenerator.applySnapshot(img, story.folder);
+    } else {
+      // Fallback to original behavior
+      img.src = `/stories/${story.folder}/media/1.jpg`;
+      img.onerror = function() {
+        this.onerror = null;
+        this.src = `/stories/${story.folder}/media/1.png`;
+      };
+    }
 
     const title = document.createElement('div');
     title.classList.add('thumbnail-title');
@@ -93,13 +99,43 @@ function selectStory(index) {
   const featuredImg = document.getElementById('featured-img');
   const featuredTitle = document.getElementById('featured-title');
 
-  featuredImg.src = `/stories/${story.folder}/media/1.jpg`;
-  featuredImg.onerror = function() {
-    this.onerror = null;
-    this.src = `/stories/${story.folder}/media/1.png`;
-  };
+  // Use snapshot generator for featured image
+  if (window.snapshotGenerator) {
+    snapshotGenerator.applySnapshot(featuredImg, story.folder);
+  } else {
+    // Fallback to original behavior
+    featuredImg.src = `/stories/${story.folder}/media/1.jpg`;
+    featuredImg.onerror = function() {
+      this.onerror = null;
+      this.src = `/stories/${story.folder}/media/1.png`;
+    };
+  }
   
   featuredTitle.textContent = story.title;
+
+  // Update focus view if active
+  updateFocusView(story);
+}
+
+function updateFocusView(story) {
+  const focusImg = document.getElementById('focus-thumbnail');
+  const focusTitle = document.getElementById('focus-story-title');
+  
+  if (focusImg && focusTitle) {
+    // Use snapshot generator for focus view
+    if (window.snapshotGenerator) {
+      snapshotGenerator.applySnapshot(focusImg, story.folder);
+    } else {
+      // Fallback to original behavior
+      focusImg.src = `/stories/${story.folder}/media/1.jpg`;
+      focusImg.onerror = function() {
+        this.onerror = null;
+        this.src = `/stories/${story.folder}/media/1.png`;
+      };
+    }
+    
+    focusTitle.textContent = story.title;
+  }
 }
 
 function previewFeaturedStory() {

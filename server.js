@@ -59,6 +59,53 @@ app.get('/api/folders', async (req, res) => {
     }
 });
 
+// API: Get all media files from a story folder recursively
+app.get('/api/story-media/:folder', async (req, res) => {
+    const { folder } = req.params;
+    const storyPath = path.join(storiesDir, folder);
+    
+    try {
+        const exists = await fs.access(storyPath).then(() => true).catch(() => false);
+        if (!exists) return res.status(404).json({ error: 'Story folder not found' });
+
+        const mediaFiles = await collectMediaFilesRecursive(storyPath, '');
+        res.json(mediaFiles);
+    } catch (error) {
+        console.error('Error collecting media files:', error);
+        res.status(500).json({ error: 'Failed to collect media files' });
+    }
+});
+
+// Helper function to collect media files recursively
+async function collectMediaFilesRecursive(dirPath, relativePath) {
+    const mediaFiles = [];
+    const supportedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm', '.ogg', '.mov'];
+
+    try {
+        const items = await fs.readdir(dirPath, { withFileTypes: true });
+        
+        for (const item of items) {
+            const itemPath = path.join(dirPath, item.name);
+            const relativeItemPath = relativePath ? path.join(relativePath, item.name) : item.name;
+            
+            if (item.isDirectory()) {
+                // Recursively search subdirectories
+                const subFiles = await collectMediaFilesRecursive(itemPath, relativeItemPath);
+                mediaFiles.push(...subFiles);
+            } else if (item.isFile()) {
+                const ext = path.extname(item.name).toLowerCase();
+                if (supportedExtensions.includes(ext)) {
+                    mediaFiles.push(relativeItemPath);
+                }
+            }
+        }
+    } catch (error) {
+        console.error(`Error reading directory ${dirPath}:`, error);
+    }
+
+    return mediaFiles;
+}
+
 // API: Get page count for a story folder
 app.get('/api/stories/:folder/pages', async (req, res) => {
     const { folder } = req.params;

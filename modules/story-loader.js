@@ -95,11 +95,17 @@ function loadCards(folders) {
     card.classList.add("story-card");
 
     const img = document.createElement("img");
-    img.src = `/stories/${folder}/media/1.jpg`;
-    img.onerror = function() {
-      this.onerror = null;
-      this.src = `/stories/${folder}/media/1.png`;
-    };
+    // Use snapshot generator for dynamic preview
+    if (window.snapshotGenerator) {
+      snapshotGenerator.applySnapshot(img, folder);
+    } else {
+      // Fallback to original behavior
+      img.src = `/stories/${folder}/media/1.jpg`;
+      img.onerror = function() {
+        this.onerror = null;
+        this.src = `/stories/${folder}/media/1.png`;
+      };
+    }
     card.appendChild(img);
 
     const cardContent = document.createElement("div");
