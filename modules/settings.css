@@ -6,8 +6,17 @@
   left: 0;
   top: 0;
   width: 100%;
-  height: 100%;
-  overflow: auto;
+  height.focus-main-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+} overflow: auto;
   background-color: rgba(45, 27, 46, 0.8);
   backdrop-filter: blur(8px);
   animation: fadeIn 0.2s ease;
@@ -106,32 +115,38 @@
 /* Enhanced Focus View Styles */
 .focus-view {
   display: none;
-  flex-direction: column;
-  padding: 4rem 0 2rem;
+  position: relative;
   width: 100%;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .focus-view.active {
-  display: flex;
+  display: block;
 }
 
 .focus-story-title {
+  position: absolute;
+  top: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text);
-  margin: 0 0 2rem 0;
-  padding: 0 2rem;
-  border: none;
+  color: white;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius);
+  z-index: 100;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .focus-main-content {
   position: relative;
   width: 100%;
-  height: 80vh;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -158,7 +173,7 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
   color: white;
   border: none;
   border-radius: 50%;
@@ -176,11 +191,11 @@
 }
 
 .focus-main-content:hover .focus-nav-button {
-  opacity: 1;
+  opacity: 0.5;
 }
 
 .focus-nav-button:hover {
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.4);
   transform: translateY(-50%) scale(1.1);
 }
 
@@ -222,84 +237,101 @@
 }
 
 .focus-overlay-btn-preview {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
   color: black;
   border: 2px solid rgba(0, 0, 0, 0.2);
 }
 
 .focus-overlay-btn-preview:hover {
-  background: white;
+  background:  rgba(255, 255, 255, 0.4);
   border-color: black;
   transform: translateY(-2px);
 }
 
 .focus-overlay-btn-play {
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.1);
   color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .focus-overlay-btn-play:hover {
-  background: black;
+  background:  rgba(0, 0, 0, 0.4);
   border-color: white;
   transform: translateY(-2px);
 }
 
 .focus-overlay-btn-edit {
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.1);
   color: white;
   border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .focus-overlay-btn-edit:hover {
-  background: black;
+  background:rgba(0, 0, 0, 0.4);
   border-color: white;
   transform: translateY(-2px);
 }
 
 .focus-indicators {
-  margin-top: 1.5rem;
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   justify-content: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  backdrop-filter: blur(8px);
 }
 
 .focus-indicator {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--border);
+  background: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .focus-indicator.active {
-  background: var(--primary);
+  background: white;
   transform: scale(1.5);
 }
 
 .focus-indicator:hover {
-  background: var(--primary);
+  background: white;
   transform: scale(1.2);
 }
 
-/* Keyboard navigation hint */
-.focus-hint {
-  position: absolute;
-  bottom: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  opacity: 0.6;
-  text-align: center;
+/* Focus View Header Overlay Adjustments */
+.focus-view.active ~ * .header-container,
+.focus-view.active + * .header-container,
+body:has(.focus-view.active) .header-container {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius);
+  margin: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+body:has(.focus-view.active) .logo {
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+body:has(.focus-view.active) .main-menu-btn {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
 }
 
 @media (max-width: 768px) {
   .focus-view {
     padding: 1rem;
-    min-height: 70vh;
+    min-height: 90vh;
   }
   
   .focus-controls {
