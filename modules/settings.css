@@ -107,127 +107,58 @@
 .focus-view {
   display: none;
   flex-direction: column;
-  padding: 4rem 2rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 4rem 0 2rem;
+  width: 100%;
   align-items: center;
-  justify-content: center;
-  min-height: 80vh;
+  justify-content: flex-start;
+  min-height: 100vh;
 }
 
 .focus-view.active {
   display: flex;
 }
 
-.focus-controls {
-  width: 100%;
-  max-width: 800px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  opacity: 0.7;
-  transition: opacity 0.3s ease;
-}
-
-.focus-controls:hover {
-  opacity: 1;
-}
-
-.focus-story-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .focus-story-title {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  margin: 0;
-}
-
-.focus-actions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.focus-btn {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.625rem;
-  border-radius: var(--radius-sm);
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: auto;
-  font-weight: 500;
-}
-
-.focus-btn-preview {
-  background: var(--surface-2);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-}
-
-.focus-btn-preview:hover {
-  background: var(--border);
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
   color: var(--text);
-}
-
-.focus-btn-play {
-  background: var(--success);
-  color: white;
-}
-
-.focus-btn-play:hover {
-  background: var(--success-dark);
-}
-
-.focus-btn-edit {
-  background: var(--primary);
-  color: white;
-}
-
-.focus-btn-edit:hover {
-  background: var(--primary-dark);
+  margin: 0 0 2rem 0;
+  padding: 0 2rem;
+  border: none;
 }
 
 .focus-main-content {
   position: relative;
   width: 100%;
-  max-width: 800px;
+  height: 80vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
 }
 
 .focus-thumbnail-container {
   position: relative;
   width: 100%;
-  max-width: 600px;
-  border-radius: var(--radius);
+  height: 100%;
   overflow: hidden;
-  box-shadow: var(--shadow-lg);
-  border: 2px solid var(--primary);
 }
 
 .focus-thumbnail {
   width: 100%;
-  height: 400px;
+  height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
 }
 
-.focus-thumbnail:hover {
-  transform: scale(1.02);
-}
-
+/* Navigation Arrows - Overlay on image */
 .focus-nav-button {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 20, 147, 0.8);
+  background: rgba(0, 0, 0, 0.6);
   color: white;
   border: none;
   border-radius: 50%;
@@ -239,8 +170,9 @@
   cursor: pointer;
   transition: all 0.3s ease;
   opacity: 0;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(4px);
   font-size: 1.25rem;
+  z-index: 10;
 }
 
 .focus-main-content:hover .focus-nav-button {
@@ -248,16 +180,81 @@
 }
 
 .focus-nav-button:hover {
-  background: rgba(255, 20, 147, 1);
+  background: rgba(0, 0, 0, 0.8);
   transform: translateY(-50%) scale(1.1);
 }
 
 .focus-nav-prev {
-  left: -1.5rem;
+  left: 2rem;
 }
 
 .focus-nav-next {
-  right: -1.5rem;
+  right: 2rem;
+}
+
+/* Overlay Action Buttons */
+.focus-overlay-actions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 1rem;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.focus-main-content:hover .focus-overlay-actions {
+  opacity: 1;
+}
+
+.focus-overlay-btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.focus-overlay-btn-preview {
+  background: rgba(255, 255, 255, 0.9);
+  color: black;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.focus-overlay-btn-preview:hover {
+  background: white;
+  border-color: black;
+  transform: translateY(-2px);
+}
+
+.focus-overlay-btn-play {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.focus-overlay-btn-play:hover {
+  background: black;
+  border-color: white;
+  transform: translateY(-2px);
+}
+
+.focus-overlay-btn-edit {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.focus-overlay-btn-edit:hover {
+  background: black;
+  border-color: white;
+  transform: translateY(-2px);
 }
 
 .focus-indicators {

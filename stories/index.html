@@ -16,8 +16,10 @@
   <div class="header-container">
     <h1 class="logo">我的故事</h1>
     <button id="main-menu-btn" class="main-menu-btn" title="主菜单">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M3 6h18M3 12h18M3 18h18"/>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
       </svg>
     </button>
     
@@ -83,40 +85,35 @@
 
   <!-- Focus View -->
   <div id="focus" class="focus-view">
-    <div class="focus-controls">
-      <div class="focus-story-info">
-        <h3 id="focus-story-title" class="focus-story-title">Story Title</h3>
-      </div>
-      <div class="focus-actions">
-        <button id="focus-preview-btn" class="focus-btn focus-btn-preview">Preview</button>
-        <button id="focus-play-btn" class="focus-btn focus-btn-play">Play</button>
-        <button id="focus-edit-btn" class="focus-btn focus-btn-edit">Edit</button>
-      </div>
-    </div>
+    <h3 id="focus-story-title" class="focus-story-title">Story Title</h3>
     
     <div class="focus-main-content">
+      <div class="focus-thumbnail-container">
+        <img id="focus-thumbnail" class="focus-thumbnail" src="" alt="Story Thumbnail">
+      </div>
+      
+      <!-- Navigation Arrows (overlaid on image) -->
       <button id="focus-prev-btn" class="focus-nav-button focus-nav-prev">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
           <path d="M15 18l-6-6 6-6"/>
         </svg>
       </button>
       
-      <div class="focus-thumbnail-container">
-        <img id="focus-thumbnail" class="focus-thumbnail" src="" alt="Story Thumbnail">
-      </div>
-      
       <button id="focus-next-btn" class="focus-nav-button focus-nav-next">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
           <path d="M9 18l6-6-6-6"/>
         </svg>
       </button>
+      
+      <!-- Overlay Action Buttons (appear on hover) -->
+      <div class="focus-overlay-actions">
+        <button id="focus-preview-btn" class="focus-overlay-btn focus-overlay-btn-preview">Preview</button>
+        <button id="focus-play-btn" class="focus-overlay-btn focus-overlay-btn-play">Play</button>
+        <button id="focus-edit-btn" class="focus-overlay-btn focus-overlay-btn-edit">Edit</button>
+      </div>
     </div>
     
     <div id="focus-indicators" class="focus-indicators"></div>
-    
-    <div class="focus-hint">
-      Use ← → arrow keys to navigate
-    </div>
   </div>
 
   <div id="previewModal" class="modal">

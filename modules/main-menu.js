@@ -26,9 +26,21 @@ function initializeMainMenu() {
   });
 
   // Menu item handlers
+  const addFavoriteBtn = document.getElementById('add-favorite-btn');
   const helpBtn = document.getElementById('help-btn');
   const toolboxBtn = document.getElementById('toolbox-btn');
   const settingsBtn = document.getElementById('settings-btn');
+
+  // Favorites modal handler
+  if (addFavoriteBtn) {
+    addFavoriteBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (typeof openFavoritesModal === 'function') {
+        openFavoritesModal();
+      }
+      closeMainMenu();
+    });
+  }
 
   // Help modal handler
   if (helpBtn) {
