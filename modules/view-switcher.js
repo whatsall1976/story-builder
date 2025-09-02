@@ -37,33 +37,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Focus overlay buttons
-  const focusPreviewBtn = document.getElementById('focus-preview-btn');
-  const focusPlayBtn = document.getElementById('focus-play-btn');
-  const focusEditBtn = document.getElementById('focus-edit-btn');
-  
-  if (focusPreviewBtn) {
-    focusPreviewBtn.addEventListener('click', () => {
+  // Focus thumbnail click to go to gallery mode
+  const focusThumbnailContainer = document.querySelector('.focus-thumbnail-container');
+  if (focusThumbnailContainer) {
+    focusThumbnailContainer.addEventListener('click', () => {
       if (allStories[selectedStoryIndex]) {
-        openPreviewModal(allStories[selectedStoryIndex].folder);
+        // Switch to gallery mode and set the selected story
+        switchView('gallery');
+        selectStory(selectedStoryIndex);
       }
     });
-  }
-  
-  if (focusPlayBtn) {
-    focusPlayBtn.addEventListener('click', () => {
-      if (allStories[selectedStoryIndex]) {
-        window.open(`/stories/${allStories[selectedStoryIndex].folder}/player.html`, '_blank');
-      }
-    });
-  }
-  
-  if (focusEditBtn) {
-    focusEditBtn.addEventListener('click', () => {
-      if (allStories[selectedStoryIndex]) {
-        window.open(`/stories/${allStories[selectedStoryIndex].folder}/builder.html`, '_blank');
-      }
-    });
+    
+    // Add cursor pointer style to indicate it's clickable
+    focusThumbnailContainer.style.cursor = 'pointer';
   }
 
   // Keyboard shortcuts

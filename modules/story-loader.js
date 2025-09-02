@@ -60,7 +60,27 @@ async function getSlidePreviewImage(folder, animationFolder) {
   }
 }
 
+// Get current view mode
+function getCurrentViewMode() {
+  const grid = document.getElementById('grid');
+  const gallery = document.getElementById('gallery'); 
+  const focus = document.getElementById('focus');
+  
+  if (grid && grid.style.display !== 'none' && !grid.classList.contains('hidden')) {
+    return 'grid';
+  } else if (gallery && gallery.style.display !== 'none' && !gallery.classList.contains('hidden')) {
+    return 'gallery';
+  } else if (focus && focus.style.display !== 'none' && !focus.classList.contains('hidden')) {
+    return 'focus';
+  }
+  return 'grid'; // default
+}
+
 async function openPreviewModal(folder) {
+  // Save current view mode
+  const currentView = getCurrentViewMode();
+  window.previewModalPreviousView = currentView;
+  
   const modal = document.getElementById('previewModal');
   const previewContainer = document.getElementById('previewContainer');
   modal.style.display = 'block';
@@ -128,15 +148,25 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('.close').addEventListener('click', () => {
     document.getElementById('previewModal').style.display = 'none';
     document.getElementById('previewContainer').innerHTML = '';
+    restorePreviousViewMode();
   });
 
   window.addEventListener('click', (event) => {
     if (event.target === document.getElementById('previewModal')) {
       document.getElementById('previewModal').style.display = 'none';
       document.getElementById('previewContainer').innerHTML = '';
+      restorePreviousViewMode();
     }
   });
 });
+
+// Restore previous view mode after closing preview modal
+function restorePreviousViewMode() {
+  if (window.previewModalPreviousView && window.switchView) {
+    window.switchView(window.previewModalPreviousView);
+    window.previewModalPreviousView = null;
+  }
+}
 
 // Load stories from API
 fetch('/api/folders')
