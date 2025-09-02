@@ -4,273 +4,123 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>我的故事</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-      padding: 20px;
-    }
-    .story-card {
-      overflow: hidden;
-      text-align: center;
-      padding: 10px;
-      position: relative;
-      background: #fff;
-    }
-    .story-card img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      object-position: top center;
-      border-radius: 6px;
-    }
-    .title {
-      margin-top: 8px;
-      font-size: 1.1em;
-      font-weight: bold;
-    }
-    .buttons-container {
-      margin-top: 10px;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    .story-card:hover .buttons-container {
-      opacity: 1;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.4);
-    }
-    .modal-content {
-      background-color: #fefefe;
-      margin: 5% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 90%;
-      max-width: 1200px;
-      position: relative;
-    }
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .close:hover,
-    .close:focus {
-      color: black;
-      text-decoration: none;
-    }
-    .preview-container {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      justify-items: center;
-    }
-    .iframe-container {
-      position: relative;
-      width: 100%;
-      padding-bottom: 56.25%;
-      overflow: hidden;
-    }
-    .iframe-wrapper {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-    .iframe-wrapper iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-    .enter-button {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 8px 16px;
-      background-color: rgba(76, 175, 80, 0.8);
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    .iframe-container:hover .enter-button {
-      opacity: 1;
-    }
-  </style>
+  <link rel="stylesheet" href="modules/styles.css">
+  <link rel="stylesheet" href="modules/view-switcher.css">
+  <link rel="stylesheet" href="modules/favorites.css">
 </head>
 <body>
 
-  <h1 style="text-align:center; margin-top:20px;">我的故事</h1>
+  <header class="main-header">
+    <div class="menu-dropdown">
+      <button id="menu-btn" class="menu-btn" title="Menu">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
+      <div id="dropdown-content" class="dropdown-content">
+        <button class="dropdown-item view-mode-item active" data-view="grid">
+          <div class="dropdown-item-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z"/>
+            </svg>
+          </div>
+          Grid View
+        </button>
+        <button class="dropdown-item view-mode-item" data-view="gallery">
+          <div class="dropdown-item-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"/>
+            </svg>
+          </div>
+          Gallery View
+        </button>
+        <div class="dropdown-separator"></div>
+        <button id="add-favorite-btn" class="dropdown-item add-favorite-btn">
+          <div class="dropdown-item-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 5v14m-7-7h14"/>
+            </svg>
+          </div>
+          创建收藏夹
+        </button>
+      </div>
+    </div>
+    
+    <h1>我的故事</h1>
+    
+    <div class="view-controls">
+      <button class="view-btn active" data-view="grid" title="Grid View">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z"/>
+        </svg>
+      </button>
+      <button class="view-btn" data-view="gallery" title="Gallery View">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+  
   <div id="grid" class="grid-container"></div>
+  
+  <div id="gallery" class="gallery-view">
+    <div id="featured-story" class="featured-story">
+      <div class="featured-image">
+        <img id="featured-img" src="" alt="Featured Story">
+      </div>
+      <div class="featured-content">
+        <h2 id="featured-title" class="featured-title">Select a story</h2>
+        <div id="featured-actions" class="featured-actions">
+          <button class="btn btn-secondary" onclick="previewFeaturedStory()">Preview</button>
+          <button class="btn btn-success" onclick="playFeaturedStory()">Play</button>
+          <button class="btn btn-primary" onclick="editFeaturedStory()">Edit</button>
+        </div>
+      </div>
+    </div>
+    <div id="thumbnails" class="story-thumbnails"></div>
+  </div>
 
   <div id="previewModal" class="modal">
     <div class="modal-content">
-      <span class="close">&times;</span>
-      <h2>Preview</h2>
+      <div class="modal-header">
+        <h2>Story Preview</h2>
+        <span class="close">&times;</span>
+      </div>
       <div id="previewContainer" class="preview-container"></div>
     </div>
   </div>
 
-  <script>
-    async function getPageCount(folder) {
-      try {
-        const response = await fetch(`/api/stories/${folder}/pages`);
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        const data = await response.json();
-        return data.pageCount || 0;
-      } catch (error) {
-        console.error('Error fetching page count:', error);
-        return 0;
-      }
-    }
+  <div id="favorites-modal" class="favorites-modal">
+    <div class="favorites-modal-content">
+      <div class="favorites-modal-header">
+        <h2>创建收藏夹</h2>
+        <span class="close">&times;</span>
+      </div>
+      
+      <div class="name-input-group">
+        <label for="favorite-name-input">收藏夹名称:</label>
+        <input type="text" id="favorite-name-input" class="name-input" placeholder="输入收藏夹名称..." maxlength="50">
+      </div>
 
-    async function openPreviewModal(folder) {
-      const modal = document.getElementById('previewModal');
-      const previewContainer = document.getElementById('previewContainer');
-      modal.style.display = 'block';
-      previewContainer.innerHTML = '';
+      <div class="stories-selection">
+        <h3>选择故事</h3>
+        <div id="selection-counter" class="selection-counter">已选择 0 个故事</div>
+        <div id="stories-grid" class="stories-grid">
+          <!-- Stories will be populated by JavaScript -->
+        </div>
+      </div>
 
-      const pageCount = await getPageCount(folder);
-      for (let i = 1; i <= pageCount; i++) {
-        const iframeContainer = document.createElement('div');
-        iframeContainer.classList.add('iframe-container');
+      <div class="favorites-modal-actions">
+        <button id="cancel-favorite-btn" class="btn btn-cancel">取消</button>
+        <button id="confirm-favorite-btn" class="btn btn-confirm" disabled>确定</button>
+      </div>
+    </div>
+  </div>
 
-        const iframeWrapper = document.createElement('div');
-        iframeWrapper.classList.add('iframe-wrapper');
-        const iframe = document.createElement('iframe');
-        iframe.src = `/stories/${folder}/page${i}.html`;
-        iframeWrapper.appendChild(iframe);
-        iframeContainer.appendChild(iframeWrapper);
-
-        const button = document.createElement('button');
-        button.classList.add('enter-button');
-        button.textContent = `Enter Page ${i}`;
-        button.dataset.pageNumber = i;
-        button.dataset.folder = folder;
-        button.addEventListener('click', (event) => {
-          event.stopPropagation();
-          const pageNumber = button.dataset.pageNumber;
-          const folder = button.dataset.folder;
-          const url = `/stories/${folder}/player.html?page=${pageNumber}`;
-          window.open(url, '_blank');
-        });
-        iframeContainer.appendChild(button);
-
-        previewContainer.appendChild(iframeContainer);
-      }
-    }
-
-    document.querySelector('.close').addEventListener('click', () => {
-      document.getElementById('previewModal').style.display = 'none';
-      document.getElementById('previewContainer').innerHTML = '';
-    });
-
-    window.addEventListener('click', (event) => {
-      if (event.target === document.getElementById('previewModal')) {
-        document.getElementById('previewModal').style.display = 'none';
-        document.getElementById('previewContainer').innerHTML = '';
-      }
-    });
-
-    fetch('/api/folders')
-      .then(response => response.json())
-      .then(data => {
-        if (data.success && data.folders) {
-          loadCards(data.folders);
-        } else {
-          console.error('Failed to fetch folder names');
-        }
-      })
-      .catch(err => console.error('Error fetching folder names:', err));
-
-    function loadCards(folders) {
-      const grid = document.getElementById("grid");
-
-      const shuffledFolders = folders.sort(() => Math.random() - 0.5);
-      shuffledFolders.forEach(folder => {
-        const card = document.createElement("div");
-        card.classList.add("story-card");
-
-        const img = document.createElement("img");
-        img.src = `/stories/${folder}/media/1.jpg`;
-        img.onerror = function() {
-          this.onerror = null;
-          this.src = `/stories/${folder}/media/1.png`;
-        };
-        card.appendChild(img);
-
-        const titleElem = document.createElement("div");
-        titleElem.classList.add("title");
-        titleElem.textContent = folder;
-        card.appendChild(titleElem);
-
-        fetch(`/stories/${folder}/player.html`)
-          .then(res => res.text())
-          .then(html => {
-            const match = html.match(/<div id=['"]controls['"][^>]*>\s*<span>(.*?)<\/span>/i);
-            if (match && match[1]) {
-              titleElem.textContent = match[1].trim();
-            }
-          })
-          .catch(() => console.warn(`Could not load title for ${folder}`));
-
-        const buttonsContainer = document.createElement("div");
-        buttonsContainer.classList.add("buttons-container");
-
-        const previewButton = document.createElement("button");
-        previewButton.textContent = "Preview";
-        previewButton.onclick = () => openPreviewModal(folder);
-        const playButton = document.createElement("button");
-        playButton.textContent = "Play";
-        playButton.onclick = () => window.open(`/stories/${folder}/player.html`, "_blank");
-
-        const editButton = document.createElement("button");
-        editButton.textContent = "Edit";
-        editButton.onclick = () => window.open(`/stories/${folder}/builder.html`, "_blank");
-        buttonsContainer.appendChild(previewButton);
-        buttonsContainer.appendChild(playButton);
-        buttonsContainer.appendChild(editButton);
-        card.appendChild(buttonsContainer);
-
-        grid.appendChild(card);
-      });
-    }
-  </script>
+  <script src="modules/view-switcher.js"></script>
+  <script src="modules/story-loader.js"></script>
+  <script src="modules/favorites.js"></script>
 
 </body>
 </html>
