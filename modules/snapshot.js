@@ -13,16 +13,43 @@ class SnapshotGenerator {
     try {
       // Check cache first
       if (this.mediaCache.has(storyFolder)) {
-        return this.generateRandomSnapshot(storyFolder);
+        const snapshot = this.generateRandomSnapshot(storyFolder);
+        
+        // If no media found in cache, try video test
+        if (snapshot.type === 'image' && snapshot.src.includes('/media/1.jpg')) {
+          const videoTest = await this.testVideoSnapshot(storyFolder);
+          if (videoTest) {
+            return videoTest;
+          }
+        }
+        
+        return snapshot;
       }
 
       // Collect media files for this story
       const mediaFiles = await this.collectMediaFiles(storyFolder);
       this.mediaCache.set(storyFolder, mediaFiles);
       
-      return this.generateRandomSnapshot(storyFolder);
+      const snapshot = this.generateRandomSnapshot(storyFolder);
+      
+      // If still no media found, try video test
+      if (snapshot.type === 'image' && snapshot.src.includes('/media/1.jpg')) {
+        const videoTest = await this.testVideoSnapshot(storyFolder);
+        if (videoTest) {
+          return videoTest;
+        }
+      }
+      
+      return snapshot;
     } catch (error) {
       console.error(`Error generating snapshot for ${storyFolder}:`, error);
+      
+      // Try video test as last resort
+      const videoTest = await this.testVideoSnapshot(storyFolder);
+      if (videoTest) {
+        return videoTest;
+      }
+      
       return this.getFallbackSnapshot(storyFolder);
     }
   }
@@ -92,7 +119,7 @@ class SnapshotGenerator {
 
   // Check for common file names in a path
   async checkCommonFiles(storyFolder, path, mediaFiles) {
-    const commonNames = ['1', '2', '3', '4', '5', 'background', 'thumb', 'preview'];
+    const commonNames = ['1', '2', '3', '4', '5', 'background', 'thumb', 'preview', 'video', 'movie'];
     const extensions = [...this.supportedImageFormats, ...this.supportedVideoFormats];
 
     for (const name of commonNames) {
@@ -102,6 +129,7 @@ class SnapshotGenerator {
           const response = await fetch(filePath, { method: 'HEAD' });
           
           if (response.ok) {
+            console.log(`Found media file: ${filePath}`);
             if (this.supportedImageFormats.includes(ext)) {
               mediaFiles.images.push(filePath);
             } else {
@@ -185,45 +213,110 @@ class SnapshotGenerator {
 
   // Apply video snapshot
   applyVideoSnapshot(element, snapshot) {
+    console.log(`Applying video snapshot: ${snapshot.src}`);
+    
+    // Clear the element first
+    element.innerHTML = '';
+    
     const video = document.createElement('video');
     video.src = snapshot.src;
     video.style.width = '100%';
     video.style.height = '100%';
     video.style.objectFit = 'cover';
+    video.style.display = 'block';
+    video.style.backgroundColor = '#000';
     video.muted = true;
     video.preload = 'metadata';
     video.loop = false;
     video.controls = false;
+    video.playsInline = true;
+    video.crossOrigin = 'anonymous';
     
-    // Set random time and pause
+    // Add loading indicator
+    const loadingDiv = document.createElement('div');
+    loadingDiv.style.position = 'absolute';
+    loadingDiv.style.top = '50%';
+    loadingDiv.style.left = '50%';
+    loadingDiv.style.transform = 'translate(-50%, -50%)';
+    loadingDiv.style.color = 'white';
+    loadingDiv.style.fontSize = '14px';
+    loadingDiv.textContent = 'Loading video...';
+    loadingDiv.style.zIndex = '5';
+    
+    // Make element relative for absolute positioning
+    element.style.position = 'relative';
+    element.appendChild(loadingDiv);
+    element.appendChild(video);
+    
+    // Handle video events
+    video.addEventListener('loadstart', () => {
+      console.log(`Video load started: ${snapshot.src}`);
+    });
+    
+    video.addEventListener('loadeddata', () => {
+      console.log(`Video data loaded: ${snapshot.src}`);
+      loadingDiv.style.display = 'none';
+    });
+    
     video.addEventListener('loadedmetadata', () => {
-      if (video.duration && video.duration > 0) {
-        const randomTime = Math.random() * Math.min(video.duration, 30); // Limit to first 30 seconds
-        video.currentTime = randomTime;
+      console.log(`Video metadata loaded: ${snapshot.src}, duration: ${video.duration}`);
+      loadingDiv.style.display = 'none';
+      
+      if (video.duration && video.duration > 0 && !isNaN(video.duration) && isFinite(video.duration)) {
+        // Generate random percentage between 10% and 80% of video duration
+        const randomPercentage = 0.1 + (Math.random() * 0.7); // 10% to 80%
+        const randomTime = video.duration * randomPercentage;
+        console.log(`Setting video to ${(randomPercentage * 100).toFixed(1)}% (${randomTime.toFixed(2)}s of ${video.duration.toFixed(2)}s)`);
         
-        // Play briefly then pause to show the frame
-        setTimeout(() => {
-          video.play().then(() => {
-            setTimeout(() => {
-              video.pause();
-            }, 100);
-          }).catch(() => {
-            // If play fails, just pause
-            video.pause();
-          });
-        }, 500);
+        // Set the time directly
+        video.currentTime = randomTime;
+      } else {
+        console.warn(`Invalid video duration: ${video.duration}`);
       }
     });
 
-    video.onerror = () => {
-      console.warn(`Video failed to load: ${snapshot.src}, falling back to image`);
-      // Fallback to image on video error
-      const fallback = this.getFallbackSnapshot(snapshot.storyFolder);
-      this.applyImageSnapshot(element, fallback);
-    };
-    
-    element.innerHTML = '';
-    element.appendChild(video);
+    // Handle when video seeking is complete
+    video.addEventListener('seeked', () => {
+      console.log(`Video seeked to: ${video.currentTime.toFixed(2)}s`);
+      
+      // Play briefly to load the frame at this position
+      video.play().then(() => {
+        console.log(`Video playing at: ${video.currentTime.toFixed(2)}s`);
+        // Pause after a short moment to capture the frame
+        setTimeout(() => {
+          video.pause();
+          console.log(`Video paused at final position: ${video.currentTime.toFixed(2)}s`);
+        }, 250);
+      }).catch((error) => {
+        console.warn(`Video play failed after seek: ${error.message}`);
+        video.pause();
+      });
+    });
+
+    video.addEventListener('canplay', () => {
+      console.log(`Video can play: ${snapshot.src}`);
+      loadingDiv.style.display = 'none';
+    });
+
+    video.addEventListener('error', (e) => {
+      console.error(`Video error: ${snapshot.src}`, e);
+      loadingDiv.textContent = 'Video failed to load';
+      
+      // Fallback to image after a delay
+      setTimeout(() => {
+        console.log(`Falling back to image for: ${snapshot.storyFolder}`);
+        const fallback = this.getFallbackSnapshot(snapshot.storyFolder);
+        this.applyImageSnapshot(element, fallback);
+      }, 2000);
+    });
+
+    video.addEventListener('stalled', () => {
+      console.warn(`Video stalled: ${snapshot.src}`);
+    });
+
+    video.addEventListener('waiting', () => {
+      console.log(`Video waiting: ${snapshot.src}`);
+    });
   }
 
   // Get fallback snapshot (original behavior)
@@ -233,6 +326,35 @@ class SnapshotGenerator {
       src: `/stories/${storyFolder}/media/1.jpg`,
       storyFolder: storyFolder
     };
+  }
+
+  // Test if a video file exists and create snapshot
+  async testVideoSnapshot(storyFolder) {
+    const commonVideoPaths = [
+      `/stories/${storyFolder}/media/1.mp4`,
+      `/stories/${storyFolder}/media/video.mp4`,
+      `/stories/${storyFolder}/media/movie.mp4`,
+      `/stories/${storyFolder}/1.mp4`,
+      `/stories/${storyFolder}/video.mp4`
+    ];
+
+    for (const path of commonVideoPaths) {
+      try {
+        const response = await fetch(path, { method: 'HEAD' });
+        if (response.ok) {
+          console.log(`Found video for testing: ${path}`);
+          return {
+            type: 'video',
+            src: path,
+            storyFolder: storyFolder
+          };
+        }
+      } catch (e) {
+        // Continue to next path
+      }
+    }
+    
+    return null;
   }
 
   // Utility: get file extension
@@ -253,6 +375,24 @@ class SnapshotGenerator {
   async preloadSnapshots(storyFolders) {
     const promises = storyFolders.map(folder => this.getSnapshot(folder));
     await Promise.allSettled(promises);
+  }
+
+  // Debug function to test video loading
+  async debugVideoTest(storyFolder, elementId) {
+    console.log(`Testing video for story: ${storyFolder}`);
+    const element = document.getElementById(elementId);
+    if (!element) {
+      console.error(`Element ${elementId} not found`);
+      return;
+    }
+    
+    const videoSnapshot = await this.testVideoSnapshot(storyFolder);
+    if (videoSnapshot) {
+      console.log(`Found video snapshot:`, videoSnapshot);
+      this.applyVideoSnapshot(element, videoSnapshot);
+    } else {
+      console.log(`No video found for ${storyFolder}`);
+    }
   }
 }
 
