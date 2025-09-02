@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Webpage</title>
+    <link rel="stylesheet" type="text/css" href="javascript/builder.css">
+    <style>
+        @keyframes flashTeleport {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+         <div class="container">
+            <div class="builder">
+                <div class="top-buttons" style="display: flex; justify-content: space-between;">
+                    <button id="loadButton"  style="flex: 1; margin-right: 5px;">加载</button>
+                    <button id="previewButton"  style="flex: 1;  margin: 0 5px;">预览</button>
+                    <button id="saveButton"  style="flex: 1; margin-left: 5px;">保存</button>
+                </div>
+                <p>
+            <!-- Input fields for parameters -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection('basic-section')">
+                    <span class="arrow" id="basic-arrow">▼</span>
+                    <span>页面号码</span>
+                </div>
+                <div class="section-content" id="basic-section" style="padding:5px; background-color:#ebd8c9; text-align: center">
+                    <label for="pageNum">页面号码</label>
+                    <input type="checkbox" id="showPageNumber" checked>
+                    <label for="showPageNumber">显示页面号码</label><br>
+                    <input type="number" id="pageNum" min="0" style="width:90%"><br>
+                    <label for="title">标题(选填)</label><br>
+                    <input type="text" id="title" style="width:90%"><br>
+                    <label for="titlePos">标题位置</label><br>
+                    <select id="titlePos" style="width: 80%">
+                        <option value="top-left">左上</option>
+                        <option value="top">顶部居中</option>
+                        <option value="top-right">右上</option>
+                        <option value="bottom-left">左下</option>
+                        <option value="bottom">底部居中</option>
+                        <option value="bottom-right">右下</option>
+                    </select><br>
+                </div>
+            </div>
+            <br>
+            <div class="section">
+                <div class="section-header" onclick="toggleSection('bg-section')">
+                    <span class="arrow" id="bg-arrow">▼</span>
+                    <span>后景</span>
+                </div>
+                <div class="section-content" id="bg-section" style="padding:5px; background-color:#e7d0c7; text-align: center">
+                    <label for="bgUrl">后景</label><br>
+                    <input type="text" id="bgUrl" value="media/" style="width:90%"><br>
+                    <label for="bgScale">占比多少</label>
+                    <label for="bgWid">画幅展现</label><br>  
+                    <input type="number" id="bgScale" value="33" min="0" max="200" style="width:40%">&nbsp;
+                    <input type="number" id="bgWid" value="100" min="0" max="100" style="width:40%"><br>    
+                    <label for="bgPos">展现位置</label>   
+                    <input type="number" id="bgPos" value="33" min="0" max="100" style="width:90%"><br>
+                    <label for="bgStart">播放起点</label>
+                    <label for="bgEnd">播放终点</label><br>
+                    <input type="number" id="bgStart" value="0" min="0" style="width:40%">&nbsp;
+                    <input type="number" id="bgEnd" value="10" min="0" style="width:40%"><br>
+                    <label for="audioUrl">声音</label><br>
+                    <input type="text" id="audioUrl" style="width:90%"><br>
+                    <label for="sceneBgColor">故事场景背景色</label><br>
+                    <input type="color" id="sceneBgColor" value="#ffffff" style="width:90%"><br>
+                </div>
+            </div>
+            <br>
+            <div class="section">
+                <div class="section-header" onclick="toggleSection('fg-section')">
+                    <span class="arrow" id="fg-arrow">▼</span>
+                    <span>前景</span>
+                </div>
+                <div class="section-content" id="fg-section" style="padding:5px; background-color:#ebd8c9; text-align: center">
+                    <label for="fgUrl">前景</label><br>
+                    <input type="text" id="fgUrl"  value="media/" style="width:90%"><br>
+                    <label for="fgScale">占比多少</label>
+                    <label for="fgWid">画幅展现</label><br>  
+                    <input type="number" id="fgScale" value="33" min="0" max="200" style="width:40%">&nbsp;
+                    <input type="number" id="fgWid" value="100" min="0" max="100" style="width:40%"><br>    
+                    <label for="fgPos">展现位置</label>   
+                    <input type="number" id="fgPos" value="33" min="0" max="100" style="width:90%"><br>
+                    <label for="fgStart">播放起点</label>
+                    <label for="fgEnd">播放终点</label><br>
+                    <input type="number" id="fgStart" value="0" min="0" style="width:40%">&nbsp;
+                    <input type="number" id="fgEnd" value="10" min="0" style="width:40%"><br>
+                </div>
+            </div>
+            <br>
+            <div class="section">
+                <div class="section-header" onclick="toggleSection('text-section')">
+                    <span class="arrow" id="text-arrow">▼</span>
+                    <span>叙述文字</span>
+                </div>
+                <div class="section-content" id="text-section" style="padding:5px; background-color:#e7d0c7; text-align: center">
+                    <label for="descript">叙述文字</label><br>
+                    <input type="text" id="descript" style="width:90%"><br>
+                    
+                    <!-- Narrative text position radio buttons -->
+                    <div style="margin-top: 10px;">
+                        <label>叙述文字位置:</label><br>
+                        <input type="radio" id="descript-bottom" name="descriptPos" value="bottom" checked>
+                        <label for="descript-bottom">底</label>
+                        <input type="radio" id="descript-middle" name="descriptPos" value="middle">
+                        <label for="descript-middle">中</label>
+                        <input type="radio" id="descript-top" name="descriptPos" value="top">
+                        <label for="descript-top">顶</label>
+                    </div>
+
+                    <label for="conv1" style="margin-top: 10px;">女声说话</label><br>
+                    <input type="text" id="conv1"  style="width:90%"><br>
+                    <label for="conv1Pos">台词位置</label><br>
+                    <input type="number" id="conv1PosL" value="600" min="0" style="width:40%">&nbsp;<input type="number" id="conv1PosT" value="300" min="0" style="width:40%"><br>
+                    <label for="conv2">男声说话</label><br>
+                    <input type="text" id="conv2" style="width:90%"><br>
+                    <label for="conv2Pos">台词位置</label><br>
+                    <input type="number" id="conv2PosL" value="600" min="0" style="width:40%">&nbsp;<input type="number" id="conv2PosT" value="50" min="300" style="width:40%"><br>
+                </div>
+            </div>
+            <br>
+            <div class="section">
+                <div class="section-header" onclick="toggleSection('animation-section')">
+                    <span class="arrow" id="animation-arrow">▼</span>
+                    <span>幻灯片连播</span>
+                </div>
+                <div class="section-content" id="animation-section" style="padding:5px; background-color:#d4c5b9; text-align: center">
+                    <label for="animationFolder">图片文件夹路径</label><br>
+                    <input type="text" id="animationFolder" value="" style="width:90%"><br>
+                    <label for="animationInterval">间隔时间(秒)</label><br>
+                    <input type="number" id="animationInterval" value="0.1" min="0.01" step="0.01" style="width:90%"><br>
+                    <label for="animationScale">缩放比例(%)</label><br>
+                    <input type="number" id="animationScale" value="80" min="1" max="200" style="width:90%"><br>
+                    <label for="animationPosition">左边距(%)</label><br>
+                    <input type="number" id="animationPosition" value="30" min="0" max="100" style="width:90%"><br>
+                    <label for="animationAudio">幻灯片音频</label><br>
+                    <input type="text" id="animationAudio" style="width:90%"><br>
+                    <button id="playAnimationButton" style="margin-top:10px; width:90%">播放幻灯片连播</button>
+                    <button id="renameImagesButton" style="margin-top:5px; width:90%; background-color:#4CAF50; color:white;">🔄 一键整理图片文件名</button>
+                    <button id="batchUpdateButton" style="margin-top:5px; width:90%; background-color:#FF6B35; color:white;">⚡ 一键更新</button>
+                    <button id="importJsonButton" style="margin-top:5px; width:90%; background-color:#4169E1; color:white;">📥 一键导入json</button>
+                </div>
+            </div>
+            <br>
+            <div class="section">
+                <div class="section-header" onclick="toggleSection('teleport-section')">
+                    <span class="arrow" id="teleport-arrow">▼</span>
+                    <span>传送按钮</span>
+                </div>
+                <div class="section-content" id="teleport-section" style="padding:5px; background-color:#d9c7e7; text-align: center">
+                    <button id="configureTeleportButton" style="width:90%; margin-top:10px; background-color:#6A5ACD; color:white;">配置传送按钮</button>
+                </div>
+            </div>
+            <br>
+            <div class="section">
+                <div class="section-header" onclick="toggleSection('player-section')">
+                    <span class="arrow" id="player-arrow">▼</span>
+                    <span>播放器设置</span>
+                </div>
+                <div class="section-content" id="player-section" style="padding:5px; background-color:#c9d4eb; text-align: center">
+                    <label for="storyTitle">故事标题</label><br>
+                    <input type="text" id="storyTitle" value="切记先点击预览才能保存！！！！" style="width:90%"><br>
+                    <label for="playerBgAudio">播放器背景音乐</label><br>
+                    <input type="text" id="playerBgAudio" value="media/music.m4a" style="width:90%"><br>
+                    <label for="controlsBgColor">播放器面板背景色</label><br>
+                    <input type="color" id="controlsBgColor" value="#000000" style="width:90%"><br>
+                    <div style="margin-top: 10px;">
+                        <button id="loadPlayerButton" style="width: 44%; margin-right: 2%;">加载播放器设置</button>
+                        <button id="savePlayerButton" style="width: 44%; margin-left: 2%;">保存播放器设置</button>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <!-- Preview Section -->
+            <div class="preview" id="preview">
+                <div id="previewArea"></div>
+            </div>
+        </div>
+
+        <!-- Teleport Button Configuration Popup -->
+        <div id="teleportPopup" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000;">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; max-height: 80vh; overflow-y: auto; width: 80%; max-width: 600px;">
+                <h3 style="text-align: center; margin-top: 0;">配置传送按钮</h3>
+                <div id="teleportButtonRows"></div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button id="teleportOkButton" style="margin-right: 10px; padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer;">确定</button>
+                    <button id="teleportCancelButton" style="padding: 10px 20px; background-color: #f44336; color: white; border: none; cursor: pointer;">取消</button>
+                </div>
+            </div>
+        </div>
+
+    <!-- Load JavaScript Modules -->
+    <script src="javascript/playerGenerator.js"></script>
+    <script src="javascript/pageGenerator.js"></script>
+    <script src="javascript/batch_generation.js"></script>
+    <script>
+        // Initialize application state and modules
+        var pageData = {
+            bgUrl: "",
+            bgScale: 100,
+            bgWid: 100,
+            bgPos: 50,
+            fgUrl: "",
+            audioUrl: "",
+            descript: "",
+            fgScale: 100,
+            fgWid: 30,
+            fgPos: 70,
+            bgStart: 0,
+            bgEnd: 0,
+            fgStart: 0,
+            fgEnd: 1,
+            title: "",
+            titlePos: "top-left",
+            titlePosL: 0,
+            titlePosT: 0,
+            pageNum: 1,
+            showPageNumber: true,
+            conv1: "",
+            conv1PosL: 50,
+            conv1PosT: 50,
+            conv2: "",
+            conv2PosL: 50,
+            conv2PosT: 50,
+            animationFolder: "",
+            animationInterval: 3,
+            animationScale: 80,
+            animationPosition: 30,
+            animationAudio: "",
+            storyTitle: "切记先点击预览才能保存！！！！",
+            playerBgAudio: "media/music.m4a",
+            sceneBgColor: "#ffffff",
+            controlsBgColor: "#000000",
+            previewContent: "",
+            descriptPos: "bottom",
+            teleportButtons: []
+        };
+
+        // Initialize generators
+        var playerGenerator = new PlayerGenerator(pageData);
+        var pageGenerator = new PageGenerator(pageData);
+
+        // Animation variables
+        var animationTimer = null;
+        var currentFrame = 1;
+        var isAnimationPlaying = false;
+        var animationAudio = null;
+        var teleportButtonConfig = [];
+
+        // Teleport button functionality
+        function showTeleportPopup() {
+            teleportButtonConfig = JSON.parse(JSON.stringify(pageData.teleportButtons));
+            generateTeleportRows();
+            document.getElementById('teleportPopup').style.display = 'block';
+        }
+
+        function generateTeleportRows() {
+            var rowsContainer = document.getElementById('teleportButtonRows');
+            rowsContainer.innerHTML = '';
+
+            var positions = ['top-left', 'top', 'top-right', 'middle-left', 'center', 'middle-right', 'bottom-left', 'bottom', 'bottom-right'];
+            var positionLabels = {'top-left': '左上', 'top': '顶部', 'top-right': '右上', 'middle-left': '中左', 'center': '中心', 'middle-right': '中右', 'bottom-left': '左下', 'bottom': '底部', 'bottom-right': '右下'};
+
+            for (var i = 0; i < 8; i++) {
+                var config = teleportButtonConfig[i] || {name: '', newWindow: false, url: '', position: '', color: 'black', loop: false};
+                
+                var row = document.createElement('div');
+                row.style.cssText = 'margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;';
+                row.innerHTML = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; gap: 10px; align-items: center;">
+                        <div>
+                            <label>名字:</label><br>
+                            <input type="text" id="teleportName${i}" value="${config.name}" style="width: 100%;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label>
+                                <input type="checkbox" id="teleportNewWindow${i}" ${config.newWindow ? 'checked' : ''}> 新窗口
+                            </label>
+                        </div>
+                        <div style="text-align: center;">
+                            <label>
+                                <input type="checkbox" id="teleportLoop${i}" ${config.loop ? 'checked' : ''}> Loop
+                            </label>
+                        </div>
+                        <div>
+                            <label>链接地址:</label><br>
+                            <input type="text" id="teleportUrl${i}" value="${config.url}" style="width: 100%;" placeholder="./pageN.html 或 https://...">
+                        </div>
+                        <div>
+                            <label>位置:</label><br>
+                            <select id="teleportPosition${i}" style="width: 100%;" onchange="updatePositionOptions()">
+                                <option value="">选择位置</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>颜色:</label><br>
+                            <select id="teleportColor${i}" style="width: 100%;">
+                                <option value="black" ${config.color === 'black' ? 'selected' : ''}>黑色</option>
+                                <option value="white" ${config.color === 'white' ? 'selected' : ''}>白色</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+                rowsContainer.appendChild(row);
+            }
+            updatePositionOptions();
+        }
+
+        function updatePositionOptions() {
+            var positions = ['top-left', 'top', 'top-right', 'middle-left', 'center', 'middle-right', 'bottom-left', 'bottom', 'bottom-right'];
+            var positionLabels = {'top-left': '左上', 'top': '顶部', 'top-right': '右上', 'middle-left': '中左', 'center': '中心', 'middle-right': '中右', 'bottom-left': '左下', 'bottom': '底部', 'bottom-right': '右下'};
+            var usedPositions = [];
+
+            for (var i = 0; i < 8; i++) {
+                var select = document.getElementById('teleportPosition' + i);
+                if (select && select.value) {
+                    usedPositions.push(select.value);
+                }
+            }
+
+            for (var i = 0; i < 8; i++) {
+                var select = document.getElementById('teleportPosition' + i);
+                if (select) {
+                    var currentValue = select.value;
+                    select.innerHTML = '<option value="">选择位置</option>';
+                    
+                    positions.forEach(function(pos) {
+                        if (!usedPositions.includes(pos) || pos === currentValue) {
+                            var option = document.createElement('option');
+                            option.value = pos;
+                            option.textContent = positionLabels[pos];
+                            option.selected = pos === currentValue;
+                            select.appendChild(option);
+                        }
+                    });
+                }
+            }
+        }
+
+        function closeTeleportPopup() {
+            document.getElementById('teleportPopup').style.display = 'none';
+        }
+
+        function saveTeleportConfig() {
+            pageData.teleportButtons = [];
+            
+            for (var i = 0; i < 8; i++) {
+                var name = document.getElementById('teleportName' + i).value.trim();
+                var newWindow = document.getElementById('teleportNewWindow' + i).checked;
+                var loop = document.getElementById('teleportLoop' + i).checked;
+                var url = document.getElementById('teleportUrl' + i).value.trim();
+                var position = document.getElementById('teleportPosition' + i).value;
+                var color = document.getElementById('teleportColor' + i).value;
+                
+                if (name && url && position) {
+                    pageData.teleportButtons.push({
+                        name: name,
+                        newWindow: newWindow,
+                        loop: loop,
+                        url: url,
+                        position: position,
+                        color: color
+                    });
+                }
+            }
+            
+            closeTeleportPopup();
+            console.log('Teleport buttons configured:', pageData.teleportButtons);
+        }
+
+        // Section toggle functionality
+        function toggleSection(sectionId) {
+            var section = document.getElementById(sectionId);
+            var arrow = document.getElementById(sectionId.replace('-section', '-arrow'));
+            
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                arrow.textContent = '▼';
+            } else {
+                section.style.display = 'none';
+                arrow.textContent = '▶';
+            }
+        }
+
+        // Animation functionality
+        function playStillFrameAnimation() {
+            if (isAnimationPlaying) {
+                stopStillFrameAnimation();
+                return;
+            }
+
+            var folder = document.getElementById('animationFolder').value;
+            var interval = parseFloat(document.getElementById('animationInterval').value) * 1000;
+            var scale = document.getElementById('animationScale').value;
+            var position = document.getElementById('animationPosition').value;
+            var audioUrl = document.getElementById('animationAudio').value;
+
+            if (!folder) {
+                alert('请输入图片文件夹路径');
+                return;
+            }
+
+            isAnimationPlaying = true;
+            currentFrame = 1;
+            document.getElementById('playAnimationButton').textContent = '停止幻灯片';
+
+            if (audioUrl.trim() !== '') {
+                animationAudio = new Audio(audioUrl);
+                animationAudio.play();
+            }
+
+            var previewArea = document.getElementById('previewArea');
+            var animationContainer = document.createElement('div');
+            animationContainer.id = 'animationContainer';
+            animationContainer.style.cssText = `
+                position: absolute;
+                left: ${position}%;
+                top: 50%;
+                transform: translateY(-50%);
+                z-index: 5000;
+                pointer-events: none;
+            `;
+            
+            var animationImg = document.createElement('img');
+            animationImg.id = 'animationImg';
+            animationImg.style.cssText = `
+                width: ${scale}%;
+                height: auto;
+                display: block;
+            `;
+            
+            animationContainer.appendChild(animationImg);
+            previewArea.appendChild(animationContainer);
+
+            function nextFrame() {
+                if (!isAnimationPlaying) return;
+
+                var imagePath = folder + currentFrame + '.jpg';
+                animationImg.src = imagePath;
+                
+                animationImg.onerror = function() {
+                    var pngPath = folder + currentFrame + '.png';
+                    animationImg.src = pngPath;
+                    
+                    animationImg.onerror = function() {
+                        currentFrame = 1;
+                        if (isAnimationPlaying) {
+                            animationTimer = setTimeout(nextFrame, interval);
+                        }
+                        return;
+                    };
+                };
+
+                currentFrame++;
+                animationTimer = setTimeout(nextFrame, interval);
+            }
+
+            nextFrame();
+        }
+
+        function stopStillFrameAnimation() {
+            isAnimationPlaying = false;
+            if (animationTimer) {
+                clearTimeout(animationTimer);
+                animationTimer = null;
+            }
+            
+            var animationContainer = document.getElementById('animationContainer');
+            if (animationContainer) {
+                animationContainer.remove();
+            }
+            
+            if (animationAudio) {
+                animationAudio.pause();
+                animationAudio = null;
+            }
+            
+            document.getElementById('playAnimationButton').textContent = '播放幻灯片连播';
+        }
+
+        // API functions for batch operations
+        async function batchUpdatePages() {
+            var button = document.getElementById('batchUpdateButton');
+            var originalText = button.textContent;
+            
+            if (!confirm('这将使用后端服务器重新生成所有现有的pageN.html文件，使它们包含最新的工具代码和功能。\n\n确定要继续吗？')) {
+                return;
+            }
+            
+            button.textContent = '正在更新...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch('/api/batch-update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    var message = `批量更新完成！\n\n已更新 ${result.updatedPages.length} 个页面`;
+                    if (result.updatedPages.length > 0) {
+                        message += `: ${result.updatedPages.join(', ')}`;
+                    }
+                    alert(message);
+                    console.log('Batch update completed:', result);
+                } else {
+                    alert('批量更新失败: ' + result.error);
+                }
+                
+            } catch (error) {
+                console.error('Batch update error:', error);
+                alert('批量更新过程中出现网络错误: ' + error.message);
+            }
+            
+            button.textContent = originalText;
+            button.disabled = false;
+        }
+
+        async function renameSlideImages() {
+            var button = document.getElementById('renameImagesButton');
+            var originalText = button.textContent;
+            
+            if (!confirm('这将按创建时间重新排序所有./media/子文件夹中的图片文件名为1.jpg、2.jpg等。\n\n确定要继续吗？')) {
+                return;
+            }
+            
+            button.textContent = '整理中...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch('/api/rename-images', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('图片文件名整理完成！\n\n' + result.output);
+                } else {
+                    alert('执行失败: ' + result.error + '\n\n' + (result.stderr || ''));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('网络错误: ' + error.message);
+            }
+            
+            button.textContent = originalText;
+            button.disabled = false;
+        }
+
+        // Main application functions using modules
+        function previewPage() {
+            var content = pageGenerator.generatePreviewContent();
+            var previewArea = document.getElementById('previewArea');
+            previewArea.innerHTML = content;
+            previewArea.style.backgroundColor = pageData.sceneBgColor;
+            
+            // Load supporting scripts
+            var scripts = ['video.js', 'tts1.js', 'tts2.js', 'animation.js'];
+            scripts.forEach(function(scriptName) {
+                var script = document.createElement('script');
+                script.src = 'javascript/' + scriptName;
+                previewArea.appendChild(script);
+            });
+        }
+
+        function savePage() {
+            pageGenerator.savePage();
+            saveToPagesJson();
+        }
+        
+        // Save page data to pages.json
+        function saveToPagesJson() {
+            var pageNum = parseInt(document.getElementById('pageNum').value);
+            if (!pageNum) {
+                console.log('No page number specified, skipping pages.json save');
+                return;
+            }
+            
+            // Collect all current form data
+            var currentPageData = {
+                bgUrl: document.getElementById('bgUrl').value,
+                bgScale: parseInt(document.getElementById('bgScale').value),
+                bgWid: parseInt(document.getElementById('bgWid').value),
+                bgPos: parseInt(document.getElementById('bgPos').value),
+                fgUrl: document.getElementById('fgUrl').value,
+                audioUrl: document.getElementById('audioUrl').value,
+                descript: document.getElementById('descript').value,
+                fgScale: parseInt(document.getElementById('fgScale').value),
+                fgWid: parseInt(document.getElementById('fgWid').value),
+                fgPos: parseInt(document.getElementById('fgPos').value),
+                bgStart: parseInt(document.getElementById('bgStart').value),
+                bgEnd: parseInt(document.getElementById('bgEnd').value),
+                fgStart: parseInt(document.getElementById('fgStart').value),
+                fgEnd: parseInt(document.getElementById('fgEnd').value),
+                title: document.getElementById('title').value,
+                titlePos: document.getElementById('titlePos').value,
+                pageNum: pageNum,
+                showPageNumber: document.getElementById('showPageNumber').checked,
+                conv1: document.getElementById('conv1').value,
+                conv1PosL: parseInt(document.getElementById('conv1PosL').value),
+                conv1PosT: parseInt(document.getElementById('conv1PosT').value),
+                conv2: document.getElementById('conv2').value,
+                conv2PosL: parseInt(document.getElementById('conv2PosL').value),
+                conv2PosT: parseInt(document.getElementById('conv2PosT').value),
+                animationFolder: document.getElementById('animationFolder').value,
+                animationInterval: parseFloat(document.getElementById('animationInterval').value),
+                animationScale: parseInt(document.getElementById('animationScale').value),
+                animationPosition: parseInt(document.getElementById('animationPosition').value),
+                animationAudio: document.getElementById('animationAudio').value,
+                storyTitle: document.getElementById('storyTitle').value,
+                playerBgAudio: document.getElementById('playerBgAudio').value,
+                sceneBgColor: document.getElementById('sceneBgColor').value,
+                controlsBgColor: document.getElementById('controlsBgColor').value,
+                descriptPos: document.querySelector('input[name="descriptPos"]:checked').value,
+                teleportButtons: pageData.teleportButtons || []
+            };
+            
+            // Send to server to save in pages.json
+            fetch('/api/save-page-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    pageNum: pageNum,
+                    pageData: currentPageData
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Page data saved to pages.json');
+                } else {
+                    console.error('Failed to save page data:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving page data:', error);
+            });
+        }
+
+        function loadPage() {
+            pageGenerator.loadPage()
+                .then(loadedPageData => {
+                    console.log('Page loaded successfully:', loadedPageData);
+                })
+                .catch(error => {
+                    console.error('Error loading page:', error);
+                });
+        }
+
+        function loadPlayerSettings() {
+            playerGenerator.loadPlayerSettings()
+                .then(settings => {
+                    document.getElementById('storyTitle').value = settings.storyTitle || '切记先点击预览才能保存！！！！';
+                    document.getElementById('playerBgAudio').value = settings.playerBgAudio || 'media/music.m4a';
+                    document.getElementById('sceneBgColor').value = settings.sceneBgColor || '#ffffff';
+                    document.getElementById('controlsBgColor').value = settings.controlsBgColor || '#000000';
+                    alert('播放器设置已从 player.html 加载');
+                })
+                .catch(error => {
+                    alert('未找到 player.html 文件，使用默认设置');
+                });
+        }
+
+        function savePlayerSettings() {
+            playerGenerator.savePlayerSettings();
+        }
+
+        function handleTeleportClick(url, newWindow, loop) {
+            if (loop) {
+                var pageMatch = url.match(/page(\d+)\.html/);
+                if (pageMatch) {
+                    var pageNum = pageMatch[1];
+                    var currentPath = window.location.pathname;
+                    var storyMatch = currentPath.match(/\/stories\/([^\/]+)\//);
+                    var storyName = storyMatch ? storyMatch[1] : '';
+                    var playerUrl = '/stories/' + storyName + '/player.html?page=' + pageNum;
+                    window.location.href = playerUrl;
+                } else {
+                    if (newWindow) {
+                        window.open(url, '_blank');
+                    } else {
+                        window.location.href = url;
+                    }
+                }
+            } else {
+                if (newWindow) {
+                    window.open(url, '_blank');
+                } else {
+                    window.location.href = url;
+                }
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Main buttons
+            document.getElementById('previewButton').addEventListener('click', previewPage);
+            document.getElementById('saveButton').addEventListener('click', savePage);
+            document.getElementById('loadButton').addEventListener('click', loadPage);
+
+            // Animation and utility buttons
+            document.getElementById('playAnimationButton').addEventListener('click', playStillFrameAnimation);
+            document.getElementById('renameImagesButton').addEventListener('click', renameSlideImages);
+            document.getElementById('batchUpdateButton').addEventListener('click', batchUpdatePages);
+            document.getElementById('importJsonButton').addEventListener('click', importJsonPages);
+
+            // Teleport button configuration
+            document.getElementById('configureTeleportButton').addEventListener('click', showTeleportPopup);
+            document.getElementById('teleportOkButton').addEventListener('click', saveTeleportConfig);
+            document.getElementById('teleportCancelButton').addEventListener('click', closeTeleportPopup);
+
+            // Player settings buttons
+            document.getElementById('loadPlayerButton').addEventListener('click', loadPlayerSettings);
+            document.getElementById('savePlayerButton').addEventListener('click', savePlayerSettings);
+
+            // Title position change handler
+            document.getElementById('titlePos').addEventListener('change', function() {
+                pageData.titlePos = this.value;
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(event) {
+                if (event.key === '/') {
+                    if (document.getElementById('audioPlayer') || document.getElementById('bgVideo') || document.getElementById('fgVideo')) {
+                        toggleAudioAndVideo();
+                    } else if (typeof pageData !== 'undefined' && pageData.animationFolder && pageData.animationFolder.trim() !== '') {
+                        playStillFrameAnimation();
+                    }
+                } else if (event.ctrlKey && event.key === 'p') {
+                    event.preventDefault();
+                    window.parent.focus();
+                    console.log('Focus returned to parent');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

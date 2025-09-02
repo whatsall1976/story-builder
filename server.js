@@ -1,0 +1,202 @@
+const express = require('express');
+const fs = require('fs').promises;
+const path = require('path');
+const { batchUpdatePages } = require('./modules/batchUpdater');
+const { generatePageTiming, listImagesFromFolder, executeImageRenaming } = require('./modules/sourceAPI');
+const app = express();
+
+// Middleware
+app.use(express.json());
+
+// Directory paths
+const storiesDir = path.join(__dirname, 'stories');
+const aiswapFaceDir = path.join(__dirname, 'AISwapFace');
+const ciag1Dir = path.join(__dirname, 'CIAG1Library');
+
+// Handle player.html with dynamic page parameter
+app.get('/stories/:folder/player.html', async (req, res) => {
+    const { folder } = req.params;
+    const { page } = req.query;
+    const playerPath = path.join(storiesDir, folder, 'player.html');
+
+    try {
+        const exists = await fs.access(playerPath).then(() => true).catch(() => false);
+        if (!exists) return res.status(404).send('Player not found');
+
+        if (page && !isNaN(page) && parseInt(page) > 1) {
+            const data = await fs.readFile(playerPath, 'utf8');
+            const modifiedHtml = data
+                .replace(/src='page1\.html'/, `src='page${page}.html'`)
+                .replace(/<script src='javascript\/player-controls\.js\?v=\d+'><\/script>/,
+                    `<script>var currentPage = ${page};</script><script src='javascript/player-controls.js?v=${Date.now()}'></script>`);
+            return res.send(modifiedHtml);
+        }
+        res.sendFile(playerPath);
+    } catch (error) {
+        console.error('Error serving player.html:', error);
+        res.status(500).send('Error serving player.html');
+    }
+});
+
+// Serve static files
+app.use('/stories', express.static(storiesDir));
+app.use('/AISwapFace', express.static(aiswapFaceDir));
+app.use('/CIAG1Library', express.static(ciag1Dir));
+
+// API: Get folder names in 'stories'
+app.get('/api/folders', async (req, res) => {
+    try {
+        const files = await fs.readdir(storiesDir, { withFileTypes: true });
+        const folders = files.filter(dirent => dirent.isDirectory()).map(dirent => dirent.name);
+        res.json({ success: true, folders });
+    } catch (error) {
+        console.error('Error fetching folders:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API: Get page count for a story folder
+app.get('/api/stories/:folder/pages', async (req, res) => {
+    const { folder } = req.params;
+    const folderPath = path.join(storiesDir, folder);
+
+    try {
+        const exists = await fs.access(folderPath).then(() => true).catch(() => false);
+        if (!exists) return res.status(404).json({ error: 'Folder not found' });
+
+        const files = await fs.readdir(folderPath);
+        const pageCount = files.filter(file => /^page\d+\.html$/.test(file)).length;
+        res.json({ pageCount });
+    } catch (error) {
+        console.error('Error fetching page count:', error);
+        res.status(500).json({ error: 'Failed to fetch page count' });
+    }
+});
+
+// API: List images in a folder
+app.get('/api/list-images', async (req, res) => {
+    try {
+        const folder = req.query.folder || '';
+        const referer = req.get('Referer');
+        let storyFolder = 'story1'; // Default fallback
+
+        if (referer) {
+            const match = referer.match(/\/stories\/([^\/]+)\//);
+            if (match) storyFolder = decodeURIComponent(match[1]);
+        }
+
+        const fullPath = path.join(storiesDir, storyFolder, folder);
+        const result = listImagesFromFolder(fullPath);
+        if (folder && result.images) {
+            result.images = result.images.map(img => path.join(folder, img));
+        }
+        res.json(result);
+    } catch (error) {
+        console.error('Error listing images:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API: Rename images
+app.post('/api/rename-images', async (req, res) => {
+    try {
+        const referer = req.get('Referer');
+        let storyFolder = 'story1';
+
+        if (referer) {
+            const match = referer.match(/\/stories\/([^\/]+)\//);
+            if (match) storyFolder = decodeURIComponent(match[1]);
+        }
+
+        const result = await executeImageRenaming(storyFolder);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API: Generate page timing
+app.post('/api/generate-timing', async (req, res) => {
+    try {
+        const referer = req.get('Referer');
+        let storyFolder = 'story1';
+
+        if (referer) {
+            const match = referer.match(/\/stories\/([^\/]+)\//);
+            if (match) storyFolder = decodeURIComponent(match[1]);
+        }
+
+        const storyPath = path.join(storiesDir, storyFolder);
+        const result = await generatePageTiming(storyPath, storyFolder);
+        res.json(result);
+    } catch (error) {
+        console.error('Error generating timing:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API: Save page data
+app.post('/api/save-page-data', async (req, res) => {
+    try {
+        const { pageNum, pageData } = req.body;
+        const referer = req.get('Referer');
+        let storyFolder = 'story1';
+
+        if (referer) {
+            const match = referer.match(/\/stories\/([^\/]+)\//);
+            if (match) storyFolder = decodeURIComponent(match[1]);
+        }
+
+        const storyPath = path.join(storiesDir, storyFolder);
+        const pagesJsonPath = path.join(storyPath, 'json', 'pages.json');
+
+        await fs.mkdir(path.dirname(pagesJsonPath), { recursive: true });
+
+        let pagesData = {};
+        try {
+            const content = await fs.readFile(pagesJsonPath, 'utf8');
+            pagesData = JSON.parse(content);
+        } catch (err) {
+            if (err.code !== 'ENOENT') throw err;
+        }
+
+        pagesData[pageNum] = pageData;
+        await fs.writeFile(pagesJsonPath, JSON.stringify(pagesData, null, 2));
+
+        res.json({ success: true, message: 'Page data saved successfully' });
+    } catch (error) {
+        console.error('Save page data error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API: Batch update pages
+app.post('/api/batch-update', async (req, res) => {
+    try {
+        const referer = req.get('Referer');
+        let storyFolder = 'story1';
+
+        if (referer) {
+            const match = referer.match(/\/stories\/([^\/]+)\//);
+            if (match) storyFolder = decodeURIComponent(match[1]);
+        }
+
+        const storyPath = path.join(storiesDir, storyFolder);
+        const result = await batchUpdatePages(storyPath, storyFolder);
+        res.json(result);
+    } catch (error) {
+        console.error('Batch update error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Serve index.html at root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(storiesDir, 'index.html'));
+});
+
+// Start server
+const PORT = 1976;
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
