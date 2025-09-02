@@ -1,13 +1,28 @@
 // Favorites Management System
-let favorites = JSON.parse(localStorage.getItem('storyFavorites') || '{}');
+let favorites = {};
 let currentFilter = 'all'; // 'all', 'grid', 'gallery', or favorite list name
 
 // Initialize favorites system
 document.addEventListener('DOMContentLoaded', function() {
   initializeDropdownMenu();
   initializeFavoritesModal();
-  loadFavoriteMenuItems();
+  loadFavoritesFromFile();
 });
+
+// Load favorites from file
+async function loadFavoritesFromFile() {
+  try {
+    const response = await fetch('/api/favorites');
+    const data = await response.json();
+    
+    if (data.success) {
+      favorites = data.favorites;
+      loadFavoriteMenuItems();
+    }
+  } catch (error) {
+    console.error('Error loading favorites:', error);
+  }
+}
 
 function initializeDropdownMenu() {
   // The main menu dropdown is now handled by main-menu.js
@@ -142,82 +157,45 @@ function closeFavoritesModal() {
 
 function populateStoriesSelection() {
   const storiesGrid = document.getElementById('stories-grid');
-  if (!storiesGrid) return;
+  if (!storiesGrid || !allStories) return;
 
-  // Always fetch all available stories, not just the filtered ones
-  fetch('/api/folders')
-    .then(response => response.json())
-    .then(data => {
-      if (data.success && data.folders) {
-        storiesGrid.innerHTML = '';
-        
-        data.folders.forEach((folder, index) => {
-          populateStoryItem(folder, index, storiesGrid);
-        });
-        
-        updateSelectionCounter();
-      }
-    })
-    .catch(err => {
-      console.error('Error fetching all folders for selection:', err);
-      // Fallback to allStories if available
-      if (allStories && allStories.length > 0) {
-        allStories.forEach((story, index) => {
-          populateStoryItem(story.folder, index, storiesGrid);
-        });
-        updateSelectionCounter();
-      }
-    });
-}
+  allStories.forEach((story, index) => {
+    const storyItem = document.createElement('div');
+    storyItem.classList.add('story-checkbox-item');
+    storyItem.dataset.folder = story.folder;
 
-function populateStoryItem(folder, index, storiesGrid) {
-  const storyItem = document.createElement('div');
-  storyItem.classList.add('story-checkbox-item');
-  storyItem.dataset.folder = folder;
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.classList.add('story-checkbox');
+    checkbox.id = `story-${index}`;
+    checkbox.value = story.folder;
 
-  const checkbox = document.createElement('input');
-  checkbox.type = 'checkbox';
-  checkbox.classList.add('story-checkbox');
-  checkbox.id = `story-${index}`;
-  checkbox.value = folder;
+    const img = document.createElement('img');
+    img.src = `/stories/${story.folder}/media/1.jpg`;
+    img.onerror = function() {
+      this.onerror = null;
+      this.src = `/stories/${story.folder}/media/1.png`;
+    };
 
-  const img = document.createElement('img');
-  img.src = `/stories/${folder}/media/1.jpg`;
-  img.onerror = function() {
-    this.onerror = null;
-    this.src = `/stories/${folder}/media/1.png`;
-  };
+    const storyName = document.createElement('div');
+    storyName.classList.add('story-name');
+    storyName.textContent = story.title;
 
-  const storyName = document.createElement('div');
-  storyName.classList.add('story-name');
-  
-  // Try to get the actual title from player.html
-  fetch(`/stories/${folder}/player.html`)
-    .then(res => res.text())
-    .then(html => {
-      const match = html.match(/<div id=['\"]controls['\"][^>]*>\\s*<span>(.*?)<\\/span>/i);
-      if (match && match[1]) {
-        storyName.textContent = match[1].trim();
-      } else {
-        storyName.textContent = folder;
-      }
-    })
-    .catch(() => {
-      storyName.textContent = folder;
+    // Toggle selection on click
+    storyItem.addEventListener('click', () => {
+      checkbox.checked = !checkbox.checked;
+      storyItem.classList.toggle('selected', checkbox.checked);
+      updateSelectionCounter();
+      validateFavoriteForm();
     });
 
-  // Toggle selection on click
-  storyItem.addEventListener('click', () => {
-    checkbox.checked = !checkbox.checked;
-    storyItem.classList.toggle('selected', checkbox.checked);
-    updateSelectionCounter();
-    validateFavoriteForm();
+    storyItem.appendChild(checkbox);
+    storyItem.appendChild(img);
+    storyItem.appendChild(storyName);
+    storiesGrid.appendChild(storyItem);
   });
 
-  storyItem.appendChild(checkbox);
-  storyItem.appendChild(img);
-  storyItem.appendChild(storyName);
-  storiesGrid.appendChild(storyItem);
+  updateSelectionCounter();
 }
 
 function updateSelectionCounter() {
@@ -243,7 +221,7 @@ function validateFavoriteForm() {
   return isValid;
 }
 
-function saveFavoriteList() {
+async function saveFavoriteList() {
   if (!validateFavoriteForm()) return;
 
   const nameInput = document.getElementById('favorite-name-input');
@@ -259,17 +237,32 @@ function saveFavoriteList() {
     createdAt: Date.now()
   };
 
-  // Save to localStorage
-  localStorage.setItem('storyFavorites', JSON.stringify(favorites));
+  try {
+    // Save to file via API
+    const response = await fetch('/api/favorites', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ favorites })
+    });
 
-  // Update dropdown menu
-  loadFavoriteMenuItems();
-
-  // Close modal
-  closeFavoritesModal();
-
-  // Show success message (optional)
-  console.log(`Favorite list "${listName}" created with ${selectedStories.length} stories`);
+    const result = await response.json();
+    
+    if (result.success) {
+      // Update dropdown menu
+      loadFavoriteMenuItems();
+      
+      // Close modal
+      closeFavoritesModal();
+      
+      console.log(`Favorite list "${listName}" created with ${selectedStories.length} stories`);
+    } else {
+      console.error('Failed to save favorites:', result.error);
+    }
+  } catch (error) {
+    console.error('Error saving favorites:', error);
+  }
 }
 
 function loadFavoriteMenuItems() {

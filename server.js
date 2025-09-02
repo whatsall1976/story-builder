@@ -194,6 +194,43 @@ app.post('/api/batch-update', async (req, res) => {
     }
 });
 
+// API: Get favorites
+app.get('/api/favorites', async (req, res) => {
+    try {
+        const favoritesPath = path.join(__dirname, 'favorites.json');
+        
+        try {
+            const data = await fs.readFile(favoritesPath, 'utf8');
+            const favorites = JSON.parse(data);
+            res.json({ success: true, favorites });
+        } catch (err) {
+            if (err.code === 'ENOENT') {
+                // File doesn't exist, return empty favorites
+                res.json({ success: true, favorites: {} });
+            } else {
+                throw err;
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching favorites:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API: Save favorites
+app.post('/api/favorites', async (req, res) => {
+    try {
+        const { favorites } = req.body;
+        const favoritesPath = path.join(__dirname, 'favorites.json');
+        
+        await fs.writeFile(favoritesPath, JSON.stringify(favorites, null, 2));
+        res.json({ success: true, message: 'Favorites saved successfully' });
+    } catch (error) {
+        console.error('Error saving favorites:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Serve index.html at root
 app.get('/', (req, res) => {
     res.sendFile(path.join(storiesDir, 'index.html'));
