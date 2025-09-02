@@ -142,45 +142,82 @@ function closeFavoritesModal() {
 
 function populateStoriesSelection() {
   const storiesGrid = document.getElementById('stories-grid');
-  if (!storiesGrid || !allStories) return;
+  if (!storiesGrid) return;
 
-  allStories.forEach((story, index) => {
-    const storyItem = document.createElement('div');
-    storyItem.classList.add('story-checkbox-item');
-    storyItem.dataset.folder = story.folder;
+  // Always fetch all available stories, not just the filtered ones
+  fetch('/api/folders')
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.folders) {
+        storiesGrid.innerHTML = '';
+        
+        data.folders.forEach((folder, index) => {
+          populateStoryItem(folder, index, storiesGrid);
+        });
+        
+        updateSelectionCounter();
+      }
+    })
+    .catch(err => {
+      console.error('Error fetching all folders for selection:', err);
+      // Fallback to allStories if available
+      if (allStories && allStories.length > 0) {
+        allStories.forEach((story, index) => {
+          populateStoryItem(story.folder, index, storiesGrid);
+        });
+        updateSelectionCounter();
+      }
+    });
+}
 
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.classList.add('story-checkbox');
-    checkbox.id = `story-${index}`;
-    checkbox.value = story.folder;
+function populateStoryItem(folder, index, storiesGrid) {
+  const storyItem = document.createElement('div');
+  storyItem.classList.add('story-checkbox-item');
+  storyItem.dataset.folder = folder;
 
-    const img = document.createElement('img');
-    img.src = `/stories/${story.folder}/media/1.jpg`;
-    img.onerror = function() {
-      this.onerror = null;
-      this.src = `/stories/${story.folder}/media/1.png`;
-    };
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.classList.add('story-checkbox');
+  checkbox.id = `story-${index}`;
+  checkbox.value = folder;
 
-    const storyName = document.createElement('div');
-    storyName.classList.add('story-name');
-    storyName.textContent = story.title;
+  const img = document.createElement('img');
+  img.src = `/stories/${folder}/media/1.jpg`;
+  img.onerror = function() {
+    this.onerror = null;
+    this.src = `/stories/${folder}/media/1.png`;
+  };
 
-    // Toggle selection on click
-    storyItem.addEventListener('click', () => {
-      checkbox.checked = !checkbox.checked;
-      storyItem.classList.toggle('selected', checkbox.checked);
-      updateSelectionCounter();
-      validateFavoriteForm();
+  const storyName = document.createElement('div');
+  storyName.classList.add('story-name');
+  
+  // Try to get the actual title from player.html
+  fetch(`/stories/${folder}/player.html`)
+    .then(res => res.text())
+    .then(html => {
+      const match = html.match(/<div id=['\"]controls['\"][^>]*>\\s*<span>(.*?)<\\/span>/i);
+      if (match && match[1]) {
+        storyName.textContent = match[1].trim();
+      } else {
+        storyName.textContent = folder;
+      }
+    })
+    .catch(() => {
+      storyName.textContent = folder;
     });
 
-    storyItem.appendChild(checkbox);
-    storyItem.appendChild(img);
-    storyItem.appendChild(storyName);
-    storiesGrid.appendChild(storyItem);
+  // Toggle selection on click
+  storyItem.addEventListener('click', () => {
+    checkbox.checked = !checkbox.checked;
+    storyItem.classList.toggle('selected', checkbox.checked);
+    updateSelectionCounter();
+    validateFavoriteForm();
   });
 
-  updateSelectionCounter();
+  storyItem.appendChild(checkbox);
+  storyItem.appendChild(img);
+  storyItem.appendChild(storyName);
+  storiesGrid.appendChild(storyItem);
 }
 
 function updateSelectionCounter() {
