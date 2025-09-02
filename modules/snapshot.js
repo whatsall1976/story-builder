@@ -1,11 +1,10 @@
-// Snapshot Module - Dynamic Preview Generation
-// Collects media from story folders and creates random previews
+// Snapshot Module - Dynamic Image Preview Generation
+// Collects images from story folders and creates random previews
 
 class SnapshotGenerator {
   constructor() {
     this.mediaCache = new Map();
-    this.supportedImageFormats = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-    this.supportedVideoFormats = ['.mp4', '.webm', '.ogg', '.mov'];
+    this.supportedImageFormats = ['.jpg', '.jpeg', '.png'];
   }
 
   // Main function to get snapshot for a story
@@ -13,85 +12,193 @@ class SnapshotGenerator {
     try {
       // Check cache first
       if (this.mediaCache.has(storyFolder)) {
-        const snapshot = this.generateRandomSnapshot(storyFolder);
-        
-        // If no media found in cache, try video test
-        if (snapshot.type === 'image' && snapshot.src.includes('/media/1.jpg')) {
-          const videoTest = await this.testVideoSnapshot(storyFolder);
-          if (videoTest) {
-            return videoTest;
-          }
-        }
-        
-        return snapshot;
+        return this.generateRandomSnapshot(storyFolder);
       }
 
-      // Collect media files for this story
-      const mediaFiles = await this.collectMediaFiles(storyFolder);
-      this.mediaCache.set(storyFolder, mediaFiles);
+      // Collect image files for this story
+      const imageFiles = await this.collectImageFiles(storyFolder);
+      this.mediaCache.set(storyFolder, imageFiles);
       
-      const snapshot = this.generateRandomSnapshot(storyFolder);
-      
-      // If still no media found, try video test
-      if (snapshot.type === 'image' && snapshot.src.includes('/media/1.jpg')) {
-        const videoTest = await this.testVideoSnapshot(storyFolder);
-        if (videoTest) {
-          return videoTest;
-        }
-      }
-      
-      return snapshot;
+      return this.generateRandomSnapshot(storyFolder);
     } catch (error) {
       console.error(`Error generating snapshot for ${storyFolder}:`, error);
-      
-      // Try video test as last resort
-      const videoTest = await this.testVideoSnapshot(storyFolder);
-      if (videoTest) {
-        return videoTest;
-      }
-      
       return this.getFallbackSnapshot(storyFolder);
     }
   }
 
-  // Collect all media files from story folder using pages.json
-  async collectMediaFiles(storyFolder) {
-    const mediaFiles = {
-      images: [],
-      videos: []
-    };
+  // Collect all image files from story folder recursively
+  async collectImageFiles(storyFolder) {
+    const imageFiles = [];
 
     try {
-      // Try to load pages.json
-      const response = await fetch(`/stories/${storyFolder}/json/pages.json`);
+      // Get all files in the story folder recursively
+      const response = await fetch(`/api/story-media/${storyFolder}`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch pages.json for ${storyFolder}`);
+        throw new Error(`Failed to fetch media for ${storyFolder}`);
       }
       
-      const jsonContent = await response.text();
-      console.log(`Loaded pages.json for ${storyFolder}`);
+      const files = await response.json();
       
-      // Extract media URLs from JSON content using regex
-      const mediaUrls = this.extractMediaFromJson(jsonContent, storyFolder);
-      
-      mediaUrls.forEach(url => {
-        const extension = this.getFileExtension(url).toLowerCase();
+      files.forEach(file => {
+        const extension = this.getFileExtension(file).toLowerCase();
         if (this.supportedImageFormats.includes(extension)) {
-          mediaFiles.images.push(url);
-        } else if (this.supportedVideoFormats.includes(extension)) {
-          mediaFiles.videos.push(url);
+          const fullPath = `/stories/${storyFolder}/${file}`;
+          imageFiles.push(fullPath);
         }
       });
 
-      console.log(`Found ${mediaFiles.images.length} images and ${mediaFiles.videos.length} videos in ${storyFolder}`);
+      console.log(`Found ${imageFiles.length} images in ${storyFolder}`);
 
     } catch (error) {
-      console.warn(`Failed to load pages.json for ${storyFolder}, using fallback detection:`, error);
-      await this.fallbackMediaDetection(storyFolder, mediaFiles);
+      // Fallback: try common paths
+      console.warn(`API call failed for ${storyFolder}, using fallback detection`);
+      await this.fallbackImageDetection(storyFolder, imageFiles);
     }
 
-    return mediaFiles;
+    return imageFiles;
   }
+
+  // Fallback method to detect image files
+  async fallbackImageDetection(storyFolder, imageFiles) {
+    const commonPaths = [
+      'media',
+      'images', 
+      'assets',
+      'page1/media',
+      'page2/media',
+      'page3/media',
+      'page4/media',
+      'page5/media',
+      'page6/media',
+      'page7/media',
+      'page8/media',
+      'page9/media',
+      'page10/media'
+    ];
+
+    for (const path of commonPaths) {
+      try {
+        const response = await fetch(`/stories/${storyFolder}/${path}/`, { method: 'HEAD' });
+        if (response.ok) {
+          // Try to load common file names
+          await this.checkCommonImageFiles(storyFolder, path, imageFiles);
+        }
+      } catch (e) {
+        // Path doesn't exist, continue
+      }
+    }
+  }
+
+  // Check for common image file names in a path
+  async checkCommonImageFiles(storyFolder, path, imageFiles) {
+    const commonNames = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'background', 'thumb', 'preview', 'image'];
+    const extensions = this.supportedImageFormats;
+
+    for (const name of commonNames) {
+      for (const ext of extensions) {
+        try {
+          const filePath = `/stories/${storyFolder}/${path}/${name}${ext}`;
+          const response = await fetch(filePath, { method: 'HEAD' });
+          
+          if (response.ok) {
+            console.log(`Found image file: ${filePath}`);
+            imageFiles.push(filePath);
+          }
+        } catch (e) {
+          // File doesn't exist, continue
+        }
+      }
+    }
+  }
+
+  // Generate random snapshot from collected images
+  generateRandomSnapshot(storyFolder) {
+    const imageFiles = this.mediaCache.get(storyFolder);
+    if (!imageFiles || imageFiles.length === 0) {
+      console.log(`No images found for ${storyFolder}, using fallback`);
+      return this.getFallbackSnapshot(storyFolder);
+    }
+
+    console.log(`Images for ${storyFolder}:`, imageFiles);
+    const randomImage = imageFiles[Math.floor(Math.random() * imageFiles.length)];
+    console.log(`Selected image for ${storyFolder}:`, randomImage);
+    
+    return {
+      type: 'image',
+      src: randomImage,
+      storyFolder: storyFolder
+    };
+  }
+
+  // Apply snapshot to an element (img only)
+  async applySnapshot(element, storyFolder) {
+    const snapshot = await this.getSnapshot(storyFolder);
+    this.applyImageSnapshot(element, snapshot);
+  }
+
+  // Apply image snapshot
+  applyImageSnapshot(element, snapshot) {
+    if (element.tagName === 'IMG') {
+      element.src = snapshot.src;
+      element.onerror = () => {
+        element.src = this.getFallbackSnapshot(snapshot.storyFolder).src;
+      };
+    } else {
+      // Create img element if element is not img
+      const img = document.createElement('img');
+      img.src = snapshot.src;
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
+      img.onerror = () => {
+        img.src = this.getFallbackSnapshot(snapshot.storyFolder).src;
+      };
+      
+      element.innerHTML = '';
+      element.appendChild(img);
+    }
+  }
+
+  // Get fallback snapshot (original behavior)
+  getFallbackSnapshot(storyFolder) {
+    return {
+      type: 'image',
+      src: `/stories/${storyFolder}/media/1.jpg`,
+      storyFolder: storyFolder
+    };
+  }
+
+  // Utility: get file extension
+  getFileExtension(filename) {
+    return filename.substring(filename.lastIndexOf('.'));
+  }
+
+  // Clear cache for a specific story or all
+  clearCache(storyFolder = null) {
+    if (storyFolder) {
+      this.mediaCache.delete(storyFolder);
+    } else {
+      this.mediaCache.clear();
+    }
+  }
+
+  // Preload snapshots for multiple stories
+  async preloadSnapshots(storyFolders) {
+    const promises = storyFolders.map(folder => this.getSnapshot(folder));
+    await Promise.allSettled(promises);
+  }
+}
+
+// Global instance
+const snapshotGenerator = new SnapshotGenerator();
+
+// Export for use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { SnapshotGenerator, snapshotGenerator };
+}
+
+// Global access
+window.snapshotGenerator = snapshotGenerator;
 
   // Extract media URLs from JSON content
   extractMediaFromJson(jsonContent, storyFolder) {
