@@ -10,6 +10,59 @@ document.addEventListener('DOMContentLoaded', function() {
     btn.addEventListener('click', () => switchView(btn.dataset.view));
   });
 
+  // Focus view navigation buttons
+  const focusPrevBtn = document.getElementById('focus-prev-btn');
+  const focusNextBtn = document.getElementById('focus-next-btn');
+  
+  if (focusPrevBtn) {
+    focusPrevBtn.addEventListener('click', () => {
+      if (allStories.length > 0) {
+        selectedStoryIndex = (selectedStoryIndex - 1 + allStories.length) % allStories.length;
+        updateFocusView(allStories[selectedStoryIndex]);
+        updateFocusIndicators();
+      }
+    });
+  }
+  
+  if (focusNextBtn) {
+    focusNextBtn.addEventListener('click', () => {
+      if (allStories.length > 0) {
+        selectedStoryIndex = (selectedStoryIndex + 1) % allStories.length;
+        updateFocusView(allStories[selectedStoryIndex]);
+        updateFocusIndicators();
+      }
+    });
+  }
+
+  // Focus overlay buttons
+  const focusPreviewBtn = document.getElementById('focus-preview-btn');
+  const focusPlayBtn = document.getElementById('focus-play-btn');
+  const focusEditBtn = document.getElementById('focus-edit-btn');
+  
+  if (focusPreviewBtn) {
+    focusPreviewBtn.addEventListener('click', () => {
+      if (allStories[selectedStoryIndex]) {
+        openPreviewModal(allStories[selectedStoryIndex].folder);
+      }
+    });
+  }
+  
+  if (focusPlayBtn) {
+    focusPlayBtn.addEventListener('click', () => {
+      if (allStories[selectedStoryIndex]) {
+        window.open(`/stories/${allStories[selectedStoryIndex].folder}/player.html`, '_blank');
+      }
+    });
+  }
+  
+  if (focusEditBtn) {
+    focusEditBtn.addEventListener('click', () => {
+      if (allStories[selectedStoryIndex]) {
+        window.open(`/stories/${allStories[selectedStoryIndex].folder}/builder.html`, '_blank');
+      }
+    });
+  }
+
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey) {
@@ -19,6 +72,9 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (e.key === '4') {
         e.preventDefault();
         switchView('gallery');
+      } else if (e.key === '3') {
+        e.preventDefault();
+        switchView('focus');
       }
     }
   });
@@ -35,15 +91,27 @@ function switchView(viewMode) {
   // Show/hide appropriate containers
   const gridContainer = document.getElementById('grid');
   const galleryContainer = document.getElementById('gallery');
+  const focusContainer = document.getElementById('focus');
 
   if (viewMode === 'grid') {
     gridContainer.style.display = 'grid';
     galleryContainer.classList.remove('active');
+    if (focusContainer) focusContainer.classList.remove('active');
   } else if (viewMode === 'gallery') {
     gridContainer.style.display = 'none';
     galleryContainer.classList.add('active');
+    if (focusContainer) focusContainer.classList.remove('active');
     if (allStories.length > 0) {
       loadGalleryView();
+    }
+  } else if (viewMode === 'focus') {
+    gridContainer.style.display = 'none';
+    galleryContainer.classList.remove('active');
+    if (focusContainer) {
+      focusContainer.classList.add('active');
+      if (allStories.length > 0) {
+        loadFocusView();
+      }
     }
   }
 }
@@ -136,6 +204,43 @@ function updateFocusView(story) {
     
     focusTitle.textContent = story.title;
   }
+}
+
+function loadFocusView() {
+  if (allStories.length > 0) {
+    const story = allStories[selectedStoryIndex] || allStories[0];
+    updateFocusView(story);
+    loadFocusIndicators();
+  }
+}
+
+function loadFocusIndicators() {
+  const indicatorsContainer = document.getElementById('focus-indicators');
+  if (!indicatorsContainer) return;
+  
+  indicatorsContainer.innerHTML = '';
+  
+  allStories.forEach((story, index) => {
+    const indicator = document.createElement('div');
+    indicator.classList.add('focus-indicator');
+    if (index === selectedStoryIndex) {
+      indicator.classList.add('active');
+    }
+    
+    indicator.addEventListener('click', () => {
+      selectedStoryIndex = index;
+      updateFocusView(allStories[index]);
+      updateFocusIndicators();
+    });
+    
+    indicatorsContainer.appendChild(indicator);
+  });
+}
+
+function updateFocusIndicators() {
+  document.querySelectorAll('.focus-indicator').forEach((indicator, index) => {
+    indicator.classList.toggle('active', index === selectedStoryIndex);
+  });
 }
 
 function previewFeaturedStory() {

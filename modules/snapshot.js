@@ -119,18 +119,32 @@ class SnapshotGenerator {
   generateRandomSnapshot(storyFolder) {
     const mediaFiles = this.mediaCache.get(storyFolder);
     if (!mediaFiles || (mediaFiles.images.length === 0 && mediaFiles.videos.length === 0)) {
+      console.log(`No media found for ${storyFolder}, using fallback`);
       return this.getFallbackSnapshot(storyFolder);
     }
 
-    // Combine all media files
-    const allMedia = [...mediaFiles.images, ...mediaFiles.videos];
-    const randomMedia = allMedia[Math.floor(Math.random() * allMedia.length)];
+    console.log(`Media for ${storyFolder}:`, mediaFiles);
+
+    // Prefer videos for more dynamic previews (70% chance if videos exist)
+    let selectedMedia;
+    if (mediaFiles.videos.length > 0 && Math.random() < 0.7) {
+      selectedMedia = mediaFiles.videos[Math.floor(Math.random() * mediaFiles.videos.length)];
+      console.log(`Selected video for ${storyFolder}:`, selectedMedia);
+    } else if (mediaFiles.images.length > 0) {
+      selectedMedia = mediaFiles.images[Math.floor(Math.random() * mediaFiles.images.length)];
+      console.log(`Selected image for ${storyFolder}:`, selectedMedia);
+    } else if (mediaFiles.videos.length > 0) {
+      selectedMedia = mediaFiles.videos[Math.floor(Math.random() * mediaFiles.videos.length)];
+      console.log(`Selected video (fallback) for ${storyFolder}:`, selectedMedia);
+    } else {
+      return this.getFallbackSnapshot(storyFolder);
+    }
     
-    const isVideo = this.supportedVideoFormats.includes(this.getFileExtension(randomMedia).toLowerCase());
+    const isVideo = this.supportedVideoFormats.includes(this.getFileExtension(selectedMedia).toLowerCase());
     
     return {
       type: isVideo ? 'video' : 'image',
-      src: randomMedia,
+      src: selectedMedia,
       storyFolder: storyFolder
     };
   }
@@ -178,14 +192,31 @@ class SnapshotGenerator {
     video.style.objectFit = 'cover';
     video.muted = true;
     video.preload = 'metadata';
+    video.loop = false;
+    video.controls = false;
     
     // Set random time and pause
     video.addEventListener('loadedmetadata', () => {
-      const randomTime = Math.random() * video.duration;
-      video.currentTime = randomTime;
+      if (video.duration && video.duration > 0) {
+        const randomTime = Math.random() * Math.min(video.duration, 30); // Limit to first 30 seconds
+        video.currentTime = randomTime;
+        
+        // Play briefly then pause to show the frame
+        setTimeout(() => {
+          video.play().then(() => {
+            setTimeout(() => {
+              video.pause();
+            }, 100);
+          }).catch(() => {
+            // If play fails, just pause
+            video.pause();
+          });
+        }, 500);
+      }
     });
 
     video.onerror = () => {
+      console.warn(`Video failed to load: ${snapshot.src}, falling back to image`);
       // Fallback to image on video error
       const fallback = this.getFallbackSnapshot(snapshot.storyFolder);
       this.applyImageSnapshot(element, fallback);
