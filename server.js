@@ -10,6 +10,7 @@ app.use(express.json());
 
 // Directory paths
 const storiesDir = path.join(__dirname, 'stories');
+const modulesDir = path.join(__dirname, 'modules');
 const aiswapFaceDir = path.join(__dirname, 'AISwapFace');
 const ciag1Dir = path.join(__dirname, 'CIAG1Library');
 
@@ -40,6 +41,7 @@ app.get('/stories/:folder/player.html', async (req, res) => {
 
 // Serve static files
 app.use('/stories', express.static(storiesDir));
+app.use('/modules', express.static(modulesDir));
 app.use('/AISwapFace', express.static(aiswapFaceDir));
 app.use('/CIAG1Library', express.static(ciag1Dir));
 
