@@ -12,138 +12,51 @@ async function getPageCount(folder) {
   }
 }
 
-// Function to get page-specific media files
-async function getPageMediaFiles(folder, pageNum) {
+// Check if a page has slides (animationFolder is not empty)
+async function getPageData(folder, pageNum) {
+  try {
+    const response = await fetch(`/stories/${folder}/json/pages.json`);
+    if (!response.ok) return null;
+    const pages = await response.json();
+    return pages[pageNum.toString()] || null;
+  } catch (error) {
+    console.error(`Error fetching page data for ${folder} page ${pageNum}:`, error);
+    return null;
+  }
+}
+
+// Get a random preview image from the animation folder or media folder
+async function getSlidePreviewImage(folder, animationFolder) {
   try {
     const response = await fetch(`/api/story-media/${folder}`);
-    if (!response.ok) return [];
+    if (!response.ok) return null;
     
     const files = await response.json();
     const supportedFormats = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm', '.ogg'];
     
-    // Filter for page-specific media files: media/{pageNum}/* or page{pageNum}/media/*
-    const pageMediaFiles = files.filter(file => {
+    // Filter for files in the animation folder
+    let slideFiles = files.filter(file => {
       const extension = file.substring(file.lastIndexOf('.')).toLowerCase();
-      if (!supportedFormats.includes(extension)) return false;
-      
-      // Check if file is in media/{pageNum}/ or page{pageNum}/media/
-      return file.includes(`media/${pageNum}/`) || file.includes(`page${pageNum}/media/`);
+      return supportedFormats.includes(extension) && file.startsWith(animationFolder);
     });
     
-    return pageMediaFiles;
-  } catch (error) {
-    console.error(`Error getting media files for page ${pageNum}:`, error);
-    return [];
-  }
-}
-
-// Function to get general media files  
-async function getGeneralMediaFiles(folder) {
-  try {
-    const response = await fetch(`/api/story-media/${folder}`);
-    if (!response.ok) return [];
-    
-    const files = await response.json();
-    const supportedFormats = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm', '.ogg'];
-    
-    // Filter for general media files: media/* (but not in numbered subdirectories)
-    const generalMediaFiles = files.filter(file => {
-      const extension = file.substring(file.lastIndexOf('.')).toLowerCase();
-      if (!supportedFormats.includes(extension)) return false;
-      
-      // Include files in media/ but not in media/{num}/ subdirectories
-      if (file.startsWith('media/')) {
-        const pathParts = file.split('/');
-        if (pathParts.length === 2) return true; // media/filename
-        // Check if second part is a number (page subdirectory)
-        return isNaN(parseInt(pathParts[1]));
-      }
-      
-      return false;
-    });
-    
-    return generalMediaFiles;
-  } catch (error) {
-    console.error('Error getting general media files:', error);
-    return [];
-  }
-}
-
-// Function to set preview image for iframe
-async function setPreviewImage(imgElement, folder, pageNum) {
-  try {
-    // First try to get page-specific media
-    let mediaFiles = await getPageMediaFiles(folder, pageNum);
-    
-    // If no page-specific media, try general media
-    if (mediaFiles.length === 0) {
-      mediaFiles = await getGeneralMediaFiles(folder);
-    }
-    
-    // If still no media, try fallback paths
-    if (mediaFiles.length === 0) {
-      const fallbackPaths = [
-        'media/1.jpg', 'media/1.png', 'media/background.jpg', 
-        'media/background.png', 'media/thumb.jpg', 'media/thumb.png'
-      ];
-      
-      for (const fallbackPath of fallbackPaths) {
-        try {
-          const response = await fetch(`/stories/${folder}/${fallbackPath}`, { method: 'HEAD' });
-          if (response.ok) {
-            imgElement.src = `/stories/${folder}/${fallbackPath}`;
-            return;
-          }
-        } catch (e) {
-          // Continue to next fallback
-        }
-      }
-      
-      // Ultimate fallback - placeholder
-      imgElement.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBQcmV2aWV3PC90ZXh0Pjwvc3ZnPg==';
-      return;
-    }
-    
-    // Randomly select a media file
-    const randomFile = mediaFiles[Math.floor(Math.random() * mediaFiles.length)];
-    const mediaUrl = `/stories/${folder}/${randomFile}`;
-    
-    // Check if it's a video file
-    const videoExtensions = ['.mp4', '.webm', '.ogg'];
-    const extension = randomFile.substring(randomFile.lastIndexOf('.')).toLowerCase();
-    
-    if (videoExtensions.includes(extension)) {
-      // For videos, create a video element and capture a frame
-      const video = document.createElement('video');
-      video.src = mediaUrl;
-      video.currentTime = 1; // Capture frame at 1 second
-      video.muted = true;
-      
-      video.addEventListener('loadeddata', () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0);
-        imgElement.src = canvas.toDataURL();
+    // If no slides found, try general media folder
+    if (slideFiles.length === 0) {
+      slideFiles = files.filter(file => {
+        const extension = file.substring(file.lastIndexOf('.')).toLowerCase();
+        if (!supportedFormats.includes(extension)) return false;
+        return file.startsWith('media/') && !file.includes('/') && file !== 'media/';
       });
-      
-      video.addEventListener('error', () => {
-        // Fallback for video preview error
-        imgElement.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNDQ0Ii8+PGNpcmNsZSBjeD0iMTAwIiBjeT0iNjAiIHI9IjIwIiBmaWxsPSIjZmZmIi8+PHBvbHlnb24gcG9pbnRzPSI5NSw1MCA5NSw3MCA5MjQsNjAiIGZpbGw9IiM0NDQiLz48L3N2Zz4=';
-      });
-    } else {
-      // For images, set directly
-      imgElement.src = mediaUrl;
-      imgElement.onerror = () => {
-        imgElement.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBQcmV2aWV3PC90ZXh0Pjwvc3ZnPg==';
-      };
     }
     
+    if (slideFiles.length === 0) return null;
+    
+    // Return a random file
+    const randomFile = slideFiles[Math.floor(Math.random() * slideFiles.length)];
+    return `/stories/${folder}/${randomFile}`;
   } catch (error) {
-    console.error(`Error setting preview image for page ${pageNum}:`, error);
-    // Fallback placeholder
-    imgElement.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5FcnJvcjwvdGV4dD48L3N2Zz4=';
+    console.error('Error getting slide preview:', error);
+    return null;
   }
 }
 
@@ -162,58 +75,34 @@ async function openPreviewModal(folder) {
     const iframeContainer = document.createElement('div');
     iframeContainer.classList.add('iframe-container');
 
-    // Add preview image overlay
-    const previewOverlay = document.createElement('div');
-    previewOverlay.classList.add('preview-overlay');
-    previewOverlay.style.cssText = `
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    `;
-
-    const previewImage = document.createElement('img');
-    previewImage.style.cssText = `
-      max-width: 80%;
-      max-height: 80%;
-      object-fit: contain;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    `;
-    
-    // Try to get a random preview image for this page
-    await setPreviewImage(previewImage, folder, i);
-    previewOverlay.appendChild(previewImage);
-
     const iframeWrapper = document.createElement('div');
     iframeWrapper.classList.add('iframe-wrapper');
     iframeWrapper.style.position = 'relative';
     
     const iframe = document.createElement('iframe');
     iframe.src = `/stories/${folder}/page${i}.html${subtitleParam}`;
-    iframe.style.filter = 'blur(2px)';
-    
-    // Add hover effects
-    iframeWrapper.addEventListener('mouseenter', () => {
-      previewOverlay.style.opacity = '0';
-      iframe.style.filter = 'none';
-    });
-    
-    iframeWrapper.addEventListener('mouseleave', () => {
-      previewOverlay.style.opacity = '1';
-      iframe.style.filter = 'blur(2px)';
-    });
-    
     iframeWrapper.appendChild(iframe);
-    iframeWrapper.appendChild(previewOverlay);
+
+    // Check if this page has slides and replace iframe with preview image
+    const pageData = await getPageData(folder, i);
+    if (pageData && pageData.animationFolder && pageData.animationFolder.trim() !== '') {
+      // This page has slides, replace iframe with preview image
+      const previewSrc = await getSlidePreviewImage(folder, pageData.animationFolder);
+      if (previewSrc) {
+        // Remove iframe and add image instead
+        iframeWrapper.removeChild(iframe);
+        
+        const previewImage = document.createElement('img');
+        previewImage.style.cssText = `
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        `;
+        previewImage.src = previewSrc;
+        iframeWrapper.appendChild(previewImage);
+      }
+    }
+
     iframeContainer.appendChild(iframeWrapper);
 
     const button = document.createElement('button');
@@ -285,7 +174,6 @@ function loadCards(folders) {
     if (window.snapshotGenerator) {
       snapshotGenerator.applySnapshot(img, folder);
     } else {
-      // Fallback to original behavior
       img.src = `/stories/${folder}/media/1.jpg`;
       img.onerror = function() {
         this.onerror = null;

@@ -184,7 +184,6 @@ async function updateFocusDisplay() {
     if (window.snapshotGenerator) {
       await snapshotGenerator.applySnapshot(thumbnail, story.folder);
     } else {
-      // Fallback to original behavior
       thumbnail.src = `/stories/${story.folder}/media/1.jpg`;
       thumbnail.onerror = function() {
         this.onerror = null;

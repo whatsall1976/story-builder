@@ -140,7 +140,6 @@ function loadGalleryView() {
     if (window.snapshotGenerator) {
       await snapshotGenerator.applySnapshot(img, story.folder);
     } else {
-      // Fallback to original behavior
       img.src = `/stories/${story.folder}/media/1.jpg`;
       img.onerror = function() {
         this.onerror = null;
@@ -179,7 +178,6 @@ async function selectStory(index) {
   if (window.snapshotGenerator) {
     await snapshotGenerator.applySnapshot(featuredImg, story.folder);
   } else {
-    // Fallback to original behavior
     featuredImg.src = `/stories/${story.folder}/media/1.jpg`;
     featuredImg.onerror = function() {
       this.onerror = null;
@@ -208,7 +206,6 @@ async function updateFocusView(story) {
       console.log(`Focus-thumbnail ID before applying snapshot: ${focusImg.id}`);
       await snapshotGenerator.applySnapshot(focusImg, story.folder);
     } else {
-      // Fallback to original behavior
       focusImg.src = `/stories/${story.folder}/media/1.jpg`;
       focusImg.onerror = function() {
         this.onerror = null;

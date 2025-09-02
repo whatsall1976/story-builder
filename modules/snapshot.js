@@ -9,21 +9,16 @@ class SnapshotGenerator {
 
   // Main function to get snapshot for a story
   async getSnapshot(storyFolder) {
-    try {
-      // Check cache first
-      if (this.mediaCache.has(storyFolder)) {
-        return this.generateRandomSnapshot(storyFolder);
-      }
-
-      // Collect image files for this story
-      const imageFiles = await this.collectImageFiles(storyFolder);
-      this.mediaCache.set(storyFolder, imageFiles);
-      
+    // Check cache first
+    if (this.mediaCache.has(storyFolder)) {
       return this.generateRandomSnapshot(storyFolder);
-    } catch (error) {
-      console.error(`Error generating snapshot for ${storyFolder}:`, error);
-      return this.getFallbackSnapshot(storyFolder);
     }
+
+    // Collect image files for this story
+    const imageFiles = await this.collectImageFiles(storyFolder);
+    this.mediaCache.set(storyFolder, imageFiles);
+    
+    return this.generateRandomSnapshot(storyFolder);
   }
 
   // Collect all image files from story folder recursively
@@ -50,28 +45,29 @@ class SnapshotGenerator {
       console.log(`Found ${imageFiles.length} images in ${storyFolder}`);
 
     } catch (error) {
-      // Fallback: try common paths
-      console.warn(`API call failed for ${storyFolder}, using fallback detection`);
-      await this.fallbackImageDetection(storyFolder, imageFiles);
+      await this.detectImageFiles(storyFolder, imageFiles);
     }
 
     return imageFiles;
   }
 
-  // Fallback method to detect image files in common locations
-  async fallbackImageDetection(storyFolder, imageFiles) {
-    const commonPaths = [
+  // Method to detect image files in common locations
+  async detectImageFiles(storyFolder, imageFiles) {
+    let commonPaths = [
       'media',
       'images', 
-      'assets',
-      'slide1/media', 'slide2/media', 'slide3/media', 'slide4/media', 'slide5/media',
-      'slide6/media', 'slide7/media', 'slide8/media', 'slide9/media', 'slide10/media',
-      'page1/media', 'page2/media', 'page3/media', 'page4/media', 'page5/media',
-      'page6/media', 'page7/media', 'page8/media', 'page9/media', 'page10/media',
-      // Add page-specific media paths
-      'media/1', 'media/2', 'media/3', 'media/4', 'media/5', 
-      'media/6', 'media/7', 'media/8', 'media/9', 'media/10'
+      'assets'
     ];
+
+    // Dynamically add page/slide paths based on actual page count
+    const response = await fetch(`/api/stories/${storyFolder}/pages`);
+    const data = await response.json();
+    const pageCount = data.pageCount;
+    
+    for (let i = 1; i <= pageCount; i++) {
+      commonPaths.push(`slide${i}/media`);
+      commonPaths.push(`page${i}/media`);
+    }
 
     for (const path of commonPaths) {
       try {
@@ -108,8 +104,8 @@ class SnapshotGenerator {
   generateRandomSnapshot(storyFolder) {
     const imageFiles = this.mediaCache.get(storyFolder);
     if (!imageFiles || imageFiles.length === 0) {
-      console.log(`No images found for ${storyFolder}, using fallback`);
-      return this.getFallbackSnapshot(storyFolder);
+      console.log(`No images found for ${storyFolder}`);
+      return this.getDefaultSnapshot(storyFolder);
     }
 
     const randomImage = imageFiles[Math.floor(Math.random() * imageFiles.length)];
@@ -136,8 +132,8 @@ class SnapshotGenerator {
       const cacheBustedSrc = snapshot.src + (snapshot.src.includes('?') ? '&' : '?') + 'cb=' + Date.now();
       element.src = cacheBustedSrc;
       element.onerror = () => {
-        console.warn(`Failed to load ${snapshot.src}, using fallback`);
-        element.src = this.getFallbackSnapshot(snapshot.storyFolder).src;
+        console.warn(`Failed to load ${snapshot.src}`);
+        element.src = this.getDefaultSnapshot(snapshot.storyFolder).src;
       };
     } else {
       // Create img element if element is not img
@@ -148,8 +144,8 @@ class SnapshotGenerator {
       img.style.height = '100%';
       img.style.objectFit = 'cover';
       img.onerror = () => {
-        console.warn(`Failed to load ${snapshot.src}, using fallback`);
-        img.src = this.getFallbackSnapshot(snapshot.storyFolder).src;
+        console.warn(`Failed to load ${snapshot.src}`);
+        img.src = this.getDefaultSnapshot(snapshot.storyFolder).src;
       };
       
       element.innerHTML = '';
@@ -157,8 +153,8 @@ class SnapshotGenerator {
     }
   }
 
-  // Get fallback snapshot (original behavior)
-  getFallbackSnapshot(storyFolder) {
+  // Get default snapshot
+  getDefaultSnapshot(storyFolder) {
     return {
       type: 'image',
       src: `/stories/${storyFolder}/media/1.jpg`,

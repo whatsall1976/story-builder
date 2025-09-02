@@ -21,7 +21,7 @@ async function loadFavoritesFromFile() {
     }
   } catch (error) {
     console.error('Error loading favorites from file:', error);
-    favorites = {}; // fallback to empty
+    favorites = {};
   }
 }
 

@@ -283,7 +283,7 @@ body {
 .iframe-container {
   position: relative;
   width: 100%;
-  padding-bottom: 56.25%;
+  height: 200px;
   overflow: hidden;
   border-radius: var(--radius-sm);
   background: var(--surface-2);
