@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
   loadFavoritesFromFile();
 });
 
-// Load favorites from file
+// Load favorites from JSON file
 async function loadFavoritesFromFile() {
   try {
     const response = await fetch('/api/favorites');
@@ -20,7 +20,8 @@ async function loadFavoritesFromFile() {
       loadFavoriteMenuItems();
     }
   } catch (error) {
-    console.error('Error loading favorites:', error);
+    console.error('Error loading favorites from file:', error);
+    favorites = {}; // fallback to empty
   }
 }
 
@@ -238,7 +239,7 @@ async function saveFavoriteList() {
   };
 
   try {
-    // Save to file via API
+    // Save to JSON file via API
     const response = await fetch('/api/favorites', {
       method: 'POST',
       headers: {
@@ -256,12 +257,12 @@ async function saveFavoriteList() {
       // Close modal
       closeFavoritesModal();
       
-      console.log(`Favorite list "${listName}" created with ${selectedStories.length} stories`);
+      console.log(`Favorite list "${listName}" saved to JSON file with ${selectedStories.length} stories`);
     } else {
-      console.error('Failed to save favorites:', result.error);
+      console.error('Failed to save favorites to file:', result.error);
     }
   } catch (error) {
-    console.error('Error saving favorites:', error);
+    console.error('Error saving favorites to file:', error);
   }
 }
 

@@ -197,7 +197,7 @@ app.post('/api/batch-update', async (req, res) => {
 // API: Get favorites
 app.get('/api/favorites', async (req, res) => {
     try {
-        const favoritesPath = path.join(__dirname, 'favorites.json');
+        const favoritesPath = path.join(__dirname, 'modules', 'favorites.json');
         
         try {
             const data = await fs.readFile(favoritesPath, 'utf8');
@@ -221,7 +221,7 @@ app.get('/api/favorites', async (req, res) => {
 app.post('/api/favorites', async (req, res) => {
     try {
         const { favorites } = req.body;
-        const favoritesPath = path.join(__dirname, 'favorites.json');
+        const favoritesPath = path.join(__dirname, 'modules', 'favorites.json');
         
         await fs.writeFile(favoritesPath, JSON.stringify(favorites, null, 2));
         res.json({ success: true, message: 'Favorites saved successfully' });
