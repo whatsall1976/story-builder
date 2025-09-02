@@ -67,7 +67,10 @@ class SnapshotGenerator {
       'slide1/media', 'slide2/media', 'slide3/media', 'slide4/media', 'slide5/media',
       'slide6/media', 'slide7/media', 'slide8/media', 'slide9/media', 'slide10/media',
       'page1/media', 'page2/media', 'page3/media', 'page4/media', 'page5/media',
-      'page6/media', 'page7/media', 'page8/media', 'page9/media', 'page10/media'
+      'page6/media', 'page7/media', 'page8/media', 'page9/media', 'page10/media',
+      // Add page-specific media paths
+      'media/1', 'media/2', 'media/3', 'media/4', 'media/5', 
+      'media/6', 'media/7', 'media/8', 'media/9', 'media/10'
     ];
 
     for (const path of commonPaths) {

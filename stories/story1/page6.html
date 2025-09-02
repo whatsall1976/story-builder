@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Saved Webpage</title>
+    <link rel='stylesheet' type='text/css' href='javascript/builder.css'>
+    <style>
+        body { background-color: #ffffff !important; }
+        html { background-color: #ffffff !important; }
+    </style>
+    <script> var pageData = {"bgUrl":"media/6.jpg","bgScale":"33","bgWid":"100","bgPos":"33","fgUrl":"media/","audioUrl":"","descript":"","fgScale":"30","fgWid":"100","fgPos":"70","bgStart":"0","bgEnd":"0","fgStart":"0","fgEnd":"0","title":"","titlePos":"top-left","pageNum":"6","conv1":"","conv1PosL":"50","conv1PosT":"50","conv2":"再说了，咱俩从高中就是同学了，我其实早就知道你喜欢扮成女孩子。我...我支持你，支持你做自己！","conv2PosL":"600","conv2PosT":"350","animationFolder":"","animationInterval":"0.1","animationScale":"80","animationPosition":"30","animationAudio":"","storyTitle":"文化祭来袭","playerBgAudio":"media/music.m4a","sceneBgColor":"#ffffff","controlsBgColor":"#000000","descriptPos":"top","showPageNumber":true}; </script>
+</head>
+<body style='background-color: #ffffff;'>
+<div><img src="media/6.jpg" alt="Background Image" class="bgImg" style="width: 33%;left: 33%;clip-path: inset(0% 0% 0% 0%);"><div class="title" style="position: absolute; left: 10px; top: 10px;">&nbsp;6</div></div><div class="conv" style="position: absolute; left: 600px; top: 350px;" onclick="speakText2()">再说了，咱俩从高中就是同学了，我其实早就知道你喜欢扮成女孩子。我...我支持你，支持你做自己！</div>
+    <script>
+        function toggleAudioAndVideo() {
+            var audio = document.getElementById('audioPlayer');
+            var video = document.getElementById('bgVideo');
+            var icon = document.getElementById('audioIcon');
+            var isPlaying = false;
+            if (audio && !audio.paused) isPlaying = true;
+            if (video && !video.paused) isPlaying = true;
+            if (isPlaying) {
+                if (audio) audio.pause();
+                if (video) video.pause();
+                icon.classList.remove('pause');
+                icon.classList.add('play');
+            } else {
+                if (audio) audio.play();
+                if (video) video.play();
+                icon.classList.remove('play');
+                icon.classList.add('pause');
+            }
+        }
+        function toggleAudio() { toggleAudioAndVideo(); }
+        function handleTeleportClick(url, newWindow, loop) {
+            var pageMatch = url.match(/page(\\d+)\\.html/);
+            if (pageMatch) {
+                // For page navigation, always use player.html to enable iframe and timing functionality
+                var pageNum = pageMatch[1];
+                var currentPath = window.location.pathname;
+                var pathParts = currentPath.split('/');
+                var storiesIndex = pathParts.indexOf('stories');
+                var storyName = (storiesIndex !== -1 && pathParts[storiesIndex + 1]) ? pathParts[storiesIndex + 1] : '';
+                var playerUrl = '/stories/' + storyName + '/player.html?page=' + pageNum;
+                if (window.parent !== window) {
+                    try {
+                        window.parent.postMessage({ type: 'teleport', url: playerUrl }, '*');
+                    } catch (e) {
+                        window.location.href = playerUrl;
+                    }
+                } else {
+                    if (newWindow) {
+                        window.open(playerUrl, '_blank');
+                    } else {
+                        window.location.href = playerUrl;
+                    }
+                }
+            } else {
+                // For non-page URLs, use direct navigation
+                if (newWindow) { window.open(url, '_blank'); } else {
+                    // Mute background music in parent before navigation
+                    if (window.parent !== window) {
+                        try {
+                            var parentAudio = window.parent.document.getElementById('bgAudio');
+                            if (parentAudio) {
+                                parentAudio.muted = true;
+                            }
+                        } catch (e) {
+                            // Cross-origin restriction, ignore
+                        }
+                    }
+                    window.location.href = url;
+                }
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var pageParam = urlParams.get('page');
+            if (pageParam) {
+                var targetUrl = './page' + pageParam + '.html';
+                setTimeout(function() { window.location.href = targetUrl; }, 100);
+                return;
+            }
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'ArrowUp') {
+                    if (typeof skipToNextFrame === 'function') {
+                        skipToNextFrame();
+                        console.log('ArrowUp: skipped to next frame');
+                    }
+                } else if (event.key === 'ArrowDown') {
+                    if (typeof skipToPreviousFrame === 'function') {
+                        skipToPreviousFrame();
+                        console.log('ArrowDown: skipped to previous frame');
+                    }
+                } else if (event.key === ' ') {
+                    event.preventDefault();
+                    if (typeof toggleAnimationPause === 'function') {
+                        toggleAnimationPause();
+                        console.log('Space: toggled animation pause');
+                    }
+                }
+            });
+        });
+    </script>
+    <script src='javascript/video.js?v=1756208880796'></script>
+    <script src='javascript/tts1.js?v=1756208880796'></script>
+    <script src='javascript/tts2.js?v=1756208880796'></script>
+    <script src='javascript/animation.js?v=1756208880796'></script>
+</body>
+</html>

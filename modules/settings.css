@@ -104,6 +104,23 @@
   color: var(--text);
 }
 
+/* Checkbox styles */
+.setting-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+  margin-right: 0.5rem;
+}
+
+.setting-item label {
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .settings-actions {
   display: flex;
   gap: 1rem;

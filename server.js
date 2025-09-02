@@ -40,6 +40,34 @@ app.get('/stories/:folder/player.html', async (req, res) => {
     }
 });
 
+// Handle pageN.html with subtitle control
+app.get('/stories/:folder/page:pageNum.html', async (req, res) => {
+    const { folder, pageNum } = req.params;
+    const { noSubtitles } = req.query;
+    const pagePath = path.join(storiesDir, folder, `page${pageNum}.html`);
+
+    try {
+        const exists = await fs.access(pagePath).then(() => true).catch(() => false);
+        if (!exists) return res.status(404).send('Page not found');
+
+        let data = await fs.readFile(pagePath, 'utf8');
+
+        if (noSubtitles === '1') {
+            // Remove subtitle elements: title, descript, conv elements, animation button, teleport buttons
+            data = data.replace(/<div class="title"[^>]*>[\s\S]*?<\/div>/g, '');
+            data = data.replace(/<div class="descript"[^>]*>[\s\S]*?<\/div>/g, '');
+            data = data.replace(/<div class="conv"[^>]*>[\s\S]*?<\/div>/g, '');
+            data = data.replace(/<button[^>]*id="animationPlayButton"[^>]*>[\s\S]*?<\/button>/g, '');
+            data = data.replace(/<button class="teleportButton"[^>]*>[\s\S]*?<\/button>/g, '');
+        }
+
+        res.send(data);
+    } catch (error) {
+        console.error('Error serving page:', error);
+        res.status(500).send('Error serving page');
+    }
+});
+
 // Serve static files
 app.use('/stories', express.static(storiesDir));
 app.use('/modules', express.static(modulesDir));

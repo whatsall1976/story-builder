@@ -2,6 +2,7 @@
 let currentViewMode = 'grid';
 let allStories = [];
 let selectedStoryIndex = 0;
+let focusAutoShiftTimer = null;
 
 // Initialize view mode switching
 document.addEventListener('DOMContentLoaded', function() {
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedStoryIndex = (selectedStoryIndex - 1 + allStories.length) % allStories.length;
         await updateFocusView(allStories[selectedStoryIndex]);
         updateFocusIndicators();
+        restartFocusAutoShift();
       }
     });
   }
@@ -30,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedStoryIndex = (selectedStoryIndex + 1) % allStories.length;
         await updateFocusView(allStories[selectedStoryIndex]);
         updateFocusIndicators();
+        restartFocusAutoShift();
       }
     });
   }
@@ -97,10 +100,12 @@ function switchView(viewMode) {
     gridContainer.style.display = 'grid';
     galleryContainer.classList.remove('active');
     if (focusContainer) focusContainer.classList.remove('active');
+    stopFocusAutoShift();
   } else if (viewMode === 'gallery') {
     gridContainer.style.display = 'none';
     galleryContainer.classList.add('active');
     if (focusContainer) focusContainer.classList.remove('active');
+    stopFocusAutoShift();
     if (allStories.length > 0) {
       loadGalleryView();
     }
@@ -112,6 +117,7 @@ function switchView(viewMode) {
       if (allStories.length > 0) {
         loadFocusView();
       }
+      startFocusAutoShift();
     }
   }
 
@@ -245,6 +251,7 @@ function loadFocusIndicators() {
       selectedStoryIndex = index;
       await updateFocusView(allStories[index]);
       updateFocusIndicators();
+      restartFocusAutoShift();
     });
     
     indicatorsContainer.appendChild(indicator);
@@ -277,3 +284,46 @@ function editFeaturedStory() {
 
 // Top-level debug log
 console.log('Top-level check: focus-thumbnail element:', document.getElementById('focus-thumbnail'));
+
+function startFocusAutoShift() {
+  if (focusAutoShiftTimer) {
+    clearInterval(focusAutoShiftTimer);
+  }
+  
+  focusAutoShiftTimer = setInterval(() => {
+    if (allStories.length > 1) {
+      // Select a random story different from current
+      let newIndex;
+      do {
+        newIndex = Math.floor(Math.random() * allStories.length);
+      } while (newIndex === selectedStoryIndex && allStories.length > 1);
+      
+      selectedStoryIndex = newIndex;
+      updateFocusView(allStories[selectedStoryIndex]);
+      updateFocusIndicators();
+    }
+  }, 5000); // 5 seconds
+}
+
+function restartFocusAutoShift() {
+  if (currentViewMode === 'focus') {
+    startFocusAutoShift();
+  }
+}
+
+// Export functions globally for other modules
+window.startFocusAutoShift = startFocusAutoShift;
+window.restartFocusAutoShift = restartFocusAutoShift;
+window.stopFocusAutoShift = stopFocusAutoShift;
+
+// Clean up timer on page unload
+window.addEventListener('beforeunload', () => {
+  stopFocusAutoShift();
+});
+
+function stopFocusAutoShift() {
+  if (focusAutoShiftTimer) {
+    clearInterval(focusAutoShiftTimer);
+    focusAutoShiftTimer = null;
+  }
+}

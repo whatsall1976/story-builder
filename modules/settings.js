@@ -1,8 +1,12 @@
 // Settings Management System
 let userSettings = {
   viewMode: 'focus', // Default to focus view
+  showSubtitles: true, // Default to show subtitles
   ...JSON.parse(localStorage.getItem('storyBuilderSettings') || '{}')
 };
+
+// Export userSettings globally
+window.userSettings = userSettings;
 
 let focusIndex = 0;
 
@@ -66,6 +70,12 @@ function loadSettingsForm() {
   if (viewModeRadio) {
     viewModeRadio.checked = true;
   }
+
+  // Set subtitles checkbox
+  const showSubtitlesCheckbox = document.getElementById('show-subtitles');
+  if (showSubtitlesCheckbox) {
+    showSubtitlesCheckbox.checked = userSettings.showSubtitles;
+  }
 }
 
 function saveSettings() {
@@ -75,8 +85,17 @@ function saveSettings() {
     userSettings.viewMode = selectedViewMode.value;
   }
 
+  // Get subtitles setting
+  const showSubtitlesCheckbox = document.getElementById('show-subtitles');
+  if (showSubtitlesCheckbox) {
+    userSettings.showSubtitles = showSubtitlesCheckbox.checked;
+  }
+
   // Save to localStorage
   localStorage.setItem('storyBuilderSettings', JSON.stringify(userSettings));
+
+  // Update global reference
+  window.userSettings = userSettings;
 
   // Apply settings immediately
   applyViewMode();
@@ -90,6 +109,9 @@ function saveSettings() {
 function loadUserSettings() {
   // Apply the saved view mode
   applyViewMode();
+  
+  // Update global reference
+  window.userSettings = userSettings;
 }
 
 function applyViewMode() {
@@ -144,6 +166,11 @@ async function loadFocusView() {
 
   await updateFocusDisplay();
   generateFocusIndicators();
+  
+  // Start auto-shift timer if in focus view
+  if (userSettings.viewMode === 'focus' && typeof startFocusAutoShift === 'function') {
+    startFocusAutoShift();
+  }
 }
 
 async function updateFocusDisplay() {
@@ -213,6 +240,11 @@ function generateFocusIndicators() {
     indicator.addEventListener('click', async () => {
       focusIndex = index;
       await updateFocusDisplay();
+      
+      // Restart auto-shift timer after manual navigation
+      if (typeof restartFocusAutoShift === 'function') {
+        restartFocusAutoShift();
+      }
     });
 
     container.appendChild(indicator);
@@ -238,6 +270,11 @@ async function navigateFocus(direction) {
   }
 
   await updateFocusDisplay();
+  
+  // Restart auto-shift timer after manual navigation
+  if (typeof restartFocusAutoShift === 'function') {
+    restartFocusAutoShift();
+  }
 }
 
 function setupKeyboardNavigation() {
