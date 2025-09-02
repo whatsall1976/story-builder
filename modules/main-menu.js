@@ -26,10 +26,22 @@ function initializeMainMenu() {
   });
 
   // Menu item handlers
+  const showAllBtn = document.getElementById('show-all-btn');
   const addFavoriteBtn = document.getElementById('add-favorite-btn');
   const helpBtn = document.getElementById('help-btn');
   const toolboxBtn = document.getElementById('toolbox-btn');
   const settingsBtn = document.getElementById('settings-btn');
+
+  // Show All handler
+  if (showAllBtn) {
+    showAllBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (typeof favoritesModule !== 'undefined' && favoritesModule.showAllStories) {
+        favoritesModule.showAllStories();
+      }
+      closeMainMenu();
+    });
+  }
 
   // Favorites modal handler
   if (addFavoriteBtn) {

@@ -10,47 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeDropdownMenu() {
-  const menuBtn = document.getElementById('menu-btn');
-  const dropdownContent = document.getElementById('dropdown-content');
-
-  if (!menuBtn || !dropdownContent) return;
-
-  // Toggle dropdown
-  menuBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    dropdownContent.classList.toggle('show');
-    menuBtn.classList.toggle('active');
-  });
-
-  // Close dropdown when clicking outside
-  document.addEventListener('click', (e) => {
-    if (!menuBtn.contains(e.target) && !dropdownContent.contains(e.target)) {
-      dropdownContent.classList.remove('show');
-      menuBtn.classList.remove('active');
-    }
-  });
-
-  // View mode selection
-  document.querySelectorAll('.view-mode-item').forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.preventDefault();
-      const viewMode = item.dataset.view;
-      selectViewMode(viewMode);
-      dropdownContent.classList.remove('show');
-      menuBtn.classList.remove('active');
-    });
-  });
-
-  // Add favorite button
-  const addFavoriteBtn = document.getElementById('add-favorite-btn');
-  if (addFavoriteBtn) {
-    addFavoriteBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      openFavoritesModal();
-      dropdownContent.classList.remove('show');
-      menuBtn.classList.remove('active');
-    });
-  }
+  // The main menu dropdown is now handled by main-menu.js
+  // We just need to handle favorite list selection events
 }
 
 function selectViewMode(mode) {
@@ -90,14 +51,22 @@ function filterStories(filterType) {
 }
 
 function showAllStories() {
-  // Reload all cards if needed
-  if (typeof loadCards === 'function' && allStories && allStories.length > 0) {
-    const grid = document.getElementById('grid');
-    grid.innerHTML = '';
-    
-    // Re-populate with all stories
-    const allFolders = allStories.map(story => story.folder);
-    loadCards(allFolders);
+  // Reset the current filter to 'all'
+  currentFilter = 'all';
+  
+  // Reload all cards
+  if (typeof loadCards === 'function') {
+    // Fetch the original folders list again
+    fetch('/api/folders')
+      .then(response => response.json())
+      .then(data => {
+        if (data.success && data.folders) {
+          const grid = document.getElementById('grid');
+          grid.innerHTML = '';
+          loadCards(data.folders);
+        }
+      })
+      .catch(err => console.error('Error refetching folders:', err));
   }
 }
 
@@ -267,7 +236,7 @@ function saveFavoriteList() {
 }
 
 function loadFavoriteMenuItems() {
-  const dropdownContent = document.getElementById('dropdown-content');
+  const dropdownContent = document.getElementById('main-dropdown-content');
   if (!dropdownContent) return;
 
   // Remove existing favorite items
@@ -277,11 +246,11 @@ function loadFavoriteMenuItems() {
   // Add favorite lists
   Object.keys(favorites).forEach(listName => {
     const favoriteItem = document.createElement('button');
-    favoriteItem.classList.add('dropdown-item', 'favorite-item');
+    favoriteItem.classList.add('main-dropdown-item', 'favorite-item');
     favoriteItem.dataset.view = listName;
     
     favoriteItem.innerHTML = `
-      <div class="dropdown-item-icon">
+      <div class="main-dropdown-item-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
         </svg>
@@ -292,12 +261,14 @@ function loadFavoriteMenuItems() {
     favoriteItem.addEventListener('click', (e) => {
       e.preventDefault();
       selectViewMode(listName);
-      dropdownContent.classList.remove('show');
-      document.getElementById('menu-btn').classList.remove('active');
+      // Close the main menu
+      if (typeof closeMainMenu === 'function') {
+        closeMainMenu();
+      }
     });
 
     // Insert before the separator (if it exists)
-    const separator = dropdownContent.querySelector('.dropdown-separator');
+    const separator = dropdownContent.querySelector('.main-dropdown-separator');
     if (separator) {
       dropdownContent.insertBefore(favoriteItem, separator);
     } else {
@@ -313,3 +284,6 @@ window.favoritesModule = {
   showAllStories,
   showFavoriteStories
 };
+
+// Make openFavoritesModal available globally for main-menu.js
+window.openFavoritesModal = openFavoritesModal;
